@@ -220,9 +220,12 @@ def _build_comparison_table(metrics_list: list[dict]) -> pd.DataFrame:
         "n_trading_days",
     ]
 
+    _suffix = "_sharpe_ratio"
     for m in metrics_list:
+        # La etiqueta de estrategia puede tener '_' (technical_only, buy_and_hold),
+        # así que se obtiene quitando el sufijo de métrica, no con split('_')[0].
         strategy = next(
-            (k.split("_")[0] for k in m if k.endswith("_sharpe_ratio")), "?"
+            (k[: -len(_suffix)] for k in m if k.endswith(_suffix)), "?"
         )
         row = {"strategy": strategy}
         for key in metric_keys:
