@@ -14,8 +14,23 @@ __pycache__/
 # Datos pesados y caché (se regeneran)
 data/raw/
 data/processed/
-models/
+# 'models/*' (no 'models/') para poder re-incluir un subdirectorio: Git no
+# desciende en un directorio ignorado por completo, así la negación de abajo
+# solo funciona si excluimos el CONTENIDO, no la carpeta entera.
+models/*
 *.parquet
+
+# --- Excepciones: SÍ se versionan ---
+# Modelo base estático (artefacto reproducible que usan los workflows en vivo)
+!models/model_v0/
+!models/model_v0/**
+# Run logs y reportes del trading en vivo: dataset de reentrenamiento que los
+# workflows de GitHub Actions commitean en cada corrida. Se re-incluyen pese a
+# las reglas data/ y *.parquet de arriba (su carpeta padre no está ignorada).
+!data/live/
+!data/live/**
+# Temporales intermedios del live_runner (no son datos de reentrenamiento)
+data/live/_*
 
 # Sistema
 .DS_Store
