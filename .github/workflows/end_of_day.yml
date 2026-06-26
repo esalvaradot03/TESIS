@@ -1,0 +1,75 @@
+name: End-of-Day Report
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"   # 21:30 UTC = 4:30 PM ET (EDT) / 5:30 PM ET (EST)
+  workflow_dispatch:
+    inputs:
+      report_date:
+        description: "Fecha del reporte (YYYY-MM-DD). Vacio = hoy"
+        required: false
+        default: ""
+
+jobs:
+  end-of-day:
+    name: Reporte EOD + actualizacion de indicadores
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+      ALPACA_API_SECRET: ${{ secrets.ALPACA_SECRET_KEY }}
+      ALPACA_BASE_URL: ${{ secrets.ALPACA_BASE_URL }}
+      ALPACA_DATA_URL: "https://data.alpaca.markets"
+      ALPACA_FEED: "iex"
+      REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+      REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      PRICE_CHUNK_SIZE: "100"
+      SEED: "42"
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: data-logs   # leer los logs intraday del dia desde data-logs
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt --quiet
+
+      - name: Cache precios (para actualizar indicadores)
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/raw/prices_raw.parquet
+            data/processed/indicators.parquet
+          key: indicators-eod-${{ github.run_id }}
+          restore-keys: indicators-
+
+      - name: Generar reporte de fin de dia
+        run: |
+          DATE_ARG="${{ github.event.inputs.report_date }}"
+          if [ -z "$DATE_ARG" ]; then
+            python scripts/run_end_of_day.py
+          else
+            python scripts/run_end_of_day.py "$DATE_ARG"
+          fi
+
+      - name: Commit reporte y indicadores actualizados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/daily_reports/ data/processed/indicators.parquet data/raw/prices_raw.parquet -f 2>/dev/null || true
+          git diff --staged --quiet && echo "Sin cambios" || \
+            git commit -m "auto(eod): reporte $(date -u +'%Y-%m-%d')"
+          git push origin HEAD:data-logs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

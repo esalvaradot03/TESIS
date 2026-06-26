@@ -1,0 +1,22 @@
+# Credenciales y entorno
+.env
+.kaggle/
+
+# Entorno virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Datos pesados y caché (se regeneran)
+data/raw/
+data/processed/
+models/
+*.parquet
+
+# Sistema
+.DS_Store
+*.log
