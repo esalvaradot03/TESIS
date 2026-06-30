@@ -54,3 +54,6 @@ data/**/*.csv
 # Sistema
 .DS_Store
 *.log
+
+# Logs del live_runner (Task Scheduler) — nunca se commitean
+logs/
