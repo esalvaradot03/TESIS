@@ -21,6 +21,11 @@ praw==7.7.1
 # --- Datasets históricos (Kaggle) ---
 kagglehub==1.0.2
 
+# --- Pipeline de larga duración (dataset maestro) ---
+yfinance==1.4.1            # 0.2.x daba YFTzMissingError con la API actual de Yahoo
+dask[dataframe]>=2024.1.0   # lectura/consolidación out-of-core
+vaderSentiment>=3.3.2       # sentimiento léxico CPU (FNSPID no trae score precalc.)
+
 # --- Paper trading ---
 alpaca-py>=0.8.0
 

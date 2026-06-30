@@ -21,9 +21,11 @@ models/*
 *.parquet
 
 # --- Excepciones: SÍ se versionan ---
-# Modelo base estático (artefacto reproducible que usan los workflows en vivo)
+# Modelos base estáticos (artefactos reproducibles: model_v0, model_v0_balanced…)
 !models/model_v0/
 !models/model_v0/**
+!models/model_v0_balanced/
+!models/model_v0_balanced/**
 # Run logs y reportes del trading en vivo: dataset de reentrenamiento que los
 # workflows de GitHub Actions commitean en cada corrida. Se re-incluyen pese a
 # las reglas data/ y *.parquet de arriba (su carpeta padre no está ignorada).
@@ -31,6 +33,23 @@ models/*
 !data/live/**
 # Temporales intermedios del live_runner (no son datos de reentrenamiento)
 data/live/_*
+
+# --- Datos externos pesados: NUNCA en el repo ---
+# Viven en D:\trading-data (disco aparte). Reglas DEFENSIVAS por si alguien crea
+# un junction/mklink dentro del repo o copia datasets por error. Si algo de esto
+# aparece dentro del árbol del repo, Git lo ignora.
+trading-data/
+**/trading-data/
+data/external/
+data/raw/external/
+**/external_data/
+# Datasets externos en CSV/TSV pesados (los del repo viven en data/raw|processed,
+# ya ignorados; estas reglas atrapan CSV sueltos fuera de esas carpetas).
+data/**/*.csv
+!data/sp500_tickers.csv
+*.tsv
+*.csv.gz
+*.parquet.gz
 
 # Sistema
 .DS_Store

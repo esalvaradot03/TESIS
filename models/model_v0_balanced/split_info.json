@@ -1,0 +1,11 @@
+{
+  "train_start": "2020-09-11",
+  "train_cutoff": "2021-11-15",
+  "test_start": "2021-11-16",
+  "test_end": "2022-03-04",
+  "n_train": 1190,
+  "n_val": 300,
+  "n_test": 373,
+  "n_features": 26,
+  "target_positive_rate": 0.5153
+}

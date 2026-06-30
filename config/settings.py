@@ -2,6 +2,7 @@
 Configuración global del sistema: carga variables de entorno y define parámetros.
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -15,6 +16,37 @@ DATA_DIR = ROOT_DIR / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 MODELS_DIR = ROOT_DIR / "models"
+
+# --- Datos externos (FUERA del repo, en disco aparte D:\trading-data) ---
+# Pesan decenas/cientos de GB; los descarga src/data/setup_external_data.py.
+# La raíz es configurable con TESIS_DATA_ROOT por si el disco cambia de letra.
+EXTERNAL_DATA_ROOT: Path = Path(os.getenv("TESIS_DATA_ROOT", "D:/trading-data"))
+
+# Sub-rutas derivadas (no se crean aquí; las crea el script de setup)
+STOCKTWITS_NYU_SYMBOL_SENTIMENTS: Path = EXTERNAL_DATA_ROOT / "stocktwits_nyu" / "symbol_sentiments"
+STOCKTWITS_NYU_FEATURES: Path = EXTERNAL_DATA_ROOT / "stocktwits_nyu" / "feature_wo_messages"
+STOCKTWITS_NYU_MESSAGES: Path = EXTERNAL_DATA_ROOT / "stocktwits_nyu" / "messages"
+WSB_KEVIN: Path = EXTERNAL_DATA_ROOT / "wsb_kaggle" / "kevinwang313_wallstreetbets"
+WSB_UNANIMAD: Path = EXTERNAL_DATA_ROOT / "wsb_kaggle" / "unanimad_reddit_rwallstreetbets"
+FNSPID: Path = EXTERNAL_DATA_ROOT / "fnspid"
+
+# Verificación NO bloqueante: si las rutas externas no existen, solo advierte.
+_EXTERNAL_PATHS = {
+    "EXTERNAL_DATA_ROOT": EXTERNAL_DATA_ROOT,
+    "STOCKTWITS_NYU_SYMBOL_SENTIMENTS": STOCKTWITS_NYU_SYMBOL_SENTIMENTS,
+    "STOCKTWITS_NYU_FEATURES": STOCKTWITS_NYU_FEATURES,
+    "STOCKTWITS_NYU_MESSAGES": STOCKTWITS_NYU_MESSAGES,
+    "WSB_KEVIN": WSB_KEVIN,
+    "WSB_UNANIMAD": WSB_UNANIMAD,
+    "FNSPID": FNSPID,
+}
+_missing_external = [name for name, p in _EXTERNAL_PATHS.items() if not p.exists()]
+if _missing_external:
+    logging.getLogger(__name__).warning(
+        "Datos externos no encontrados (%d/%d rutas). Corré "
+        "`python -m src.data.setup_external_data`. Faltan: %s",
+        len(_missing_external), len(_EXTERNAL_PATHS), ", ".join(_missing_external),
+    )
 
 # --- Reproducibilidad ---
 SEED: int = int(os.getenv("SEED", "42"))
