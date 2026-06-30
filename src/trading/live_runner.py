@@ -118,7 +118,7 @@ def collect_live_sentiment(
         consume feature_engine (post_id, timestamp, ticker, sentiment_label,
         probs, score, num_comments, stocktwits_sentiment).
     """
-    import json
+    import requests
 
     from src.sentiment import scraper_stocktwits as st
     from src.sentiment.finbert_scorer import FinBERTScorer, _explode_by_ticker
@@ -127,19 +127,33 @@ def collect_live_sentiment(
 
     sp500 = set(get_tickers())
 
-    trending = st.fetch_trending_symbols(limit=max_symbols * 2)
+    # El endpoint público de StockTwits está tras Cloudflare, que BLOQUEA (403) las
+    # IPs de datacenter/cloud (p.ej. runners de GitHub Actions). Funciona desde IP
+    # residencial pero no desde la nube. Se degrada con gracia: si no hay acceso,
+    # no se generan señales y la corrida termina limpia (sin crashear ni operar).
+    try:
+        trending = st.fetch_trending_symbols(limit=max_symbols * 2)
+    except (requests.HTTPError, requests.RequestException) as exc:
+        logger.warning(
+            "StockTwits no accesible (%s). Probable bloqueo Cloudflare a IP de "
+            "datacenter (GitHub Actions). Sin datos en esta corrida.", exc,
+        )
+        return pd.DataFrame(), []
+
     target = [t for t in trending if t in sp500][:max_symbols]
     if not target:
         logger.warning("Ningún trending symbol pertenece al S&P 500.")
         return pd.DataFrame(), []
     logger.info("Trending ∩ S&P500 (%d): %s", len(target), target)
 
-    # Recolectar y normalizar mensajes
+    # Recolectar y normalizar mensajes (tolerante a fallos por símbolo)
     rows: list[dict] = []
-    session = None
     for symbol in target:
-        raw = st.fetch_symbol_messages(symbol, max_messages=max_messages)
-        rows.extend(st.normalize_messages(raw))
+        try:
+            raw = st.fetch_symbol_messages(symbol, max_messages=max_messages)
+            rows.extend(st.normalize_messages(raw))
+        except (requests.HTTPError, requests.RequestException) as exc:
+            logger.warning("StockTwits falló para %s (%s); se omite.", symbol, exc)
 
     if not rows:
         logger.warning("No se recolectaron mensajes.")

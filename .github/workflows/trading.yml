@@ -4,10 +4,18 @@ name: Live Paper Trading
 # El horario de mercado 9:30–16:00 ET equivale a:
 #   - EST (invierno, UTC-5): 14:30–21:00 UTC
 #   - EDT (verano,  UTC-4): 13:30–20:00 UTC
-# Programamos cada 30 min cubriendo AMBAS franjas (13:00–21:30 UTC, lun–vie) y
-# dejamos que el chequeo de mercado de Alpaca (get_clock().is_open, que ya
-# contempla feriados) sea el que decide si realmente se opera. Así el cron
-# "sobre-dispara" y la lógica interna hace no-op fuera del horario real.
+# Cada 30 min cubriendo AMBAS franjas (13:00–21:30 UTC, lun–vie); el chequeo
+# get_clock().is_open de Alpaca (que ya contempla feriados) hace no-op fuera de horario.
+#
+# SEGURIDAD: corre en DRY-RUN por defecto (también en schedule, por la lógica
+# `dry_run != 'false'` del step) → NO envía órdenes a Alpaca. NO se opera con
+# model_v0 (sabemos que es malo); solo se acumulan run logs.
+#
+# LIMITACIÓN CONOCIDA: el endpoint público de StockTwits está tras Cloudflare,
+# que bloquea (403) las IPs de datacenter de GitHub. Por eso desde Actions el
+# scraper no obtiene datos en horario de mercado; live_runner lo maneja con
+# gracia (loguea y termina limpio, sin crashear). Para recolectar datos reales
+# hay que correr el live_runner desde una IP residencial (ver docs).
 on:
   schedule:
     - cron: "0,30 13-21 * * 1-5"
@@ -16,7 +24,7 @@ on:
       dry_run:
         description: "No enviar órdenes a Alpaca (solo predecir + run log)"
         type: boolean
-        default: false
+        default: true
       force:
         description: "Operar aunque el mercado esté cerrado (pruebas)"
         type: boolean
@@ -73,12 +81,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Ejecutar flujo de trading en vivo
+      - name: Ejecutar flujo de trading en vivo (DRY-RUN por defecto)
         run: |
           python -m src.trading.live_runner \
             --model-dir models/model_v0 \
             --max-symbols "${{ github.event.inputs.max_symbols || '15' }}" \
-            ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }} \
+            ${{ github.event.inputs.dry_run != 'false' && '--dry-run' || '' }} \
             ${{ github.event.inputs.force == 'true' && '--force' || '' }}
 
       - name: Commit run logs (datos de reentrenamiento)

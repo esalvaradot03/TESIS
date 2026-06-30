@@ -1,9 +1,11 @@
 name: EOD Report
 
 # Reporte End-of-Day tras el cierre del mercado (16:00 ET).
-# 21:30 UTC cubre el cierre tanto en EST (16:30 ET) como con margen en EDT
-# (17:30 ET). Solo días hábiles (lun–vie); si fuese feriado el reporte
-# simplemente mostrará el último estado de la cuenta.
+# 21:30 UTC cubre el cierre tanto en EST (16:30 ET) como con margen en EDT (17:30 ET).
+#
+# Solo consulta el estado de la cuenta de Alpaca (sin dependencia de StockTwits),
+# así que funciona desde los runners de GitHub. Con trading en dry-run la cuenta
+# estará plana, pero el reporte igual es válido (equity, P&L, posiciones).
 on:
   schedule:
     - cron: "30 21 * * 1-5"
