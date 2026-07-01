@@ -14,10 +14,18 @@ if ($logs) {
     Write-Host "`nUltimo log: $($logs[0].Name)   ($($logs[0].LastWriteTime))"
     Write-Host "`nExit code de las ultimas 5 corridas:"
     foreach ($l in ($logs | Select-Object -First 5)) {
-        $m = Select-String -Path $l.FullName -Pattern 'FIN exit code=(\d+)' | Select-Object -Last 1
-        if ($m) { $code = $m.Matches[0].Groups[1].Value } else { $code = '??(sin FIN - posible crash/kill)' }
-        $mark = if ($code -eq '0') { 'OK  ' } else { 'FAIL' }
-        Write-Host ("  [{0}] {1}  exit={2}" -f $mark, $l.Name, $code)
+        # Lee el exit code real: acepta "FIN exit code=N", "Exit code: N", etc.
+        $m = Select-String -Path $l.FullName -Pattern '(?i)exit code[=:\s]+([0-9]+)' | Select-Object -Last 1
+        if ($m) {
+            $code = $m.Matches[0].Groups[1].Value
+            # Solo FAIL si el exit code esta presente y != 0
+            $mark = if ($code -eq '0') { 'OK        ' } else { 'FAIL      ' }
+            Write-Host ("  [{0}] {1}  exit={2}" -f $mark, $l.Name, $code)
+        } else {
+            # Sin linea de exit code => INCOMPLETO (no es un FAIL): kill por el
+            # timeout de 10 min, corrida aun en curso, o wrapper sin esa linea.
+            Write-Host ("  [INCOMPLETO] {0}  (sin 'exit code' - kill por timeout de 10min o corrida en curso)" -f $l.Name)
+        }
     }
 } else {
     Write-Host "`n(sin logs todavia en $logdir)"
