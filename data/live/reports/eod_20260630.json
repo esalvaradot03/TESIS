@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-06-30T22:50:41.099165+00:00",
+  "equity": 93669.03,
+  "last_equity": 94077.05,
+  "cash": 0.01,
+  "buying_power": 262273.3,
+  "portfolio_value": 93669.03,
+  "day_pl": -548.88,
+  "day_pl_pct": -0.0058,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "DIS",
+      "qty": 971.468814539,
+      "avg_entry_price": 96.84,
+      "current_price": 96.42,
+      "market_value": 93669.023098,
+      "unrealized_pl": -408.016902,
+      "unrealized_plpc": -0.00434
+    }
+  ]
+}
