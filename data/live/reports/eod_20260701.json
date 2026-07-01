@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-07-01T22:47:43.177830+00:00",
+  "equity": 93063.21,
+  "last_equity": 93503.87339937875,
+  "cash": -43.59,
+  "buying_power": 260524.67,
+  "portfolio_value": 93063.21,
+  "day_pl": -1396.02,
+  "day_pl_pct": -0.0149,
+  "n_positions": 5,
+  "positions": [
+    {
+      "symbol": "AMAT",
+      "qty": 28.232109177,
+      "avg_entry_price": 652.218008,
+      "current_price": 661.5155,
+      "market_value": 18675.977818,
+      "unrealized_pl": 262.487809,
+      "unrealized_plpc": 0.01426
+    },
+    {
+      "symbol": "CAT",
+      "qty": 18.537714193,
+      "avg_entry_price": 993.298839,
+      "current_price": 994.2,
+      "market_value": 18430.195451,
+      "unrealized_pl": 16.705465,
+      "unrealized_plpc": 0.00091
+    },
+    {
+      "symbol": "CEG",
+      "qty": 79.000429037,
+      "avg_entry_price": 233.080886,
+      "current_price": 236.79,
+      "market_value": 18706.511592,
+      "unrealized_pl": 293.021598,
+      "unrealized_plpc": 0.01591
+    },
+    {
+      "symbol": "DIS",
+      "qty": 191.867145983,
+      "avg_entry_price": 95.97,
+      "current_price": 96.029,
+      "market_value": 18424.810162,
+      "unrealized_pl": 11.320162,
+      "unrealized_plpc": 0.00061
+    },
+    {
+      "symbol": "LRCX",
+      "qty": 47.529723032,
+      "avg_entry_price": 387.41,
+      "current_price": 397.0,
+      "market_value": 18869.300044,
+      "unrealized_pl": 455.810044,
+      "unrealized_plpc": 0.02475
+    }
+  ]
+}
