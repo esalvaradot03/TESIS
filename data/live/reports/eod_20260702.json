@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-07-02T22:37:06.310589+00:00",
+  "equity": 92467.32,
+  "last_equity": 92354.02285526694,
+  "cash": -9.24,
+  "buying_power": 258897.4,
+  "portfolio_value": 92467.32,
+  "day_pl": -394.33,
+  "day_pl_pct": -0.0043,
+  "n_positions": 3,
+  "positions": [
+    {
+      "symbol": "ISRG",
+      "qty": 72.243858781,
+      "avg_entry_price": 424.558994,
+      "current_price": 425.3738,
+      "market_value": 30730.644736,
+      "unrealized_pl": 58.864729,
+      "unrealized_plpc": 0.00192
+    },
+    {
+      "symbol": "KO",
+      "qty": 367.634903511,
+      "avg_entry_price": 83.43,
+      "current_price": 84.14,
+      "market_value": 30932.800781,
+      "unrealized_pl": 261.020781,
+      "unrealized_plpc": 0.00851
+    },
+    {
+      "symbol": "VEEV",
+      "qty": 159.868790074,
+      "avg_entry_price": 191.855958,
+      "current_price": 192.74,
+      "market_value": 30813.110599,
+      "unrealized_pl": 141.330725,
+      "unrealized_plpc": 0.00461
+    }
+  ]
+}

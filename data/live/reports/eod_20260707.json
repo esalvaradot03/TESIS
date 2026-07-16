@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-07-07T22:38:04.146797+00:00",
+  "equity": 92509.25,
+  "last_equity": 92462.1088842382,
+  "cash": 80898.31,
+  "buying_power": 356103.87,
+  "portfolio_value": 92509.25,
+  "day_pl": 140.83,
+  "day_pl_pct": 0.0015,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "DDOG",
+      "qty": 45.28252686,
+      "avg_entry_price": 257.127336,
+      "current_price": 256.411,
+      "market_value": 11610.937995,
+      "unrealized_pl": -32.437504,
+      "unrealized_plpc": -0.00279
+    }
+  ]
+}
