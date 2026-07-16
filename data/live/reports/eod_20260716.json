@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-07-16T22:29:28.553099+00:00",
+  "equity": 92458.51,
+  "last_equity": 92873.7270533956,
+  "cash": -21.42,
+  "buying_power": 258858.13,
+  "portfolio_value": 92458.51,
+  "day_pl": -1014.1,
+  "day_pl_pct": -0.0109,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "MS",
+      "qty": 423.249110813,
+      "avg_entry_price": 216.49,
+      "current_price": 218.5,
+      "market_value": 92479.930713,
+      "unrealized_pl": 850.730713,
+      "unrealized_plpc": 0.00928
+    }
+  ]
+}
