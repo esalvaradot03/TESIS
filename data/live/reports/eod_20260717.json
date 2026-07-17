@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-07-17T22:13:22.439177+00:00",
+  "equity": 88392.29,
+  "last_equity": 92403.21832823481,
+  "cash": 5045.42,
+  "buying_power": 253552.92,
+  "portfolio_value": 88392.29,
+  "day_pl": -4145.58,
+  "day_pl_pct": -0.0449,
+  "n_positions": 5,
+  "positions": [
+    {
+      "symbol": "KO",
+      "qty": 217.747171667,
+      "avg_entry_price": 81.32,
+      "current_price": 81.74,
+      "market_value": 17798.653812,
+      "unrealized_pl": 91.453812,
+      "unrealized_plpc": 0.00516
+    },
+    {
+      "symbol": "LOW",
+      "qty": 83.988047241,
+      "avg_entry_price": 210.83,
+      "current_price": 209.1668,
+      "market_value": 17567.51108,
+      "unrealized_pl": -139.68892,
+      "unrealized_plpc": -0.00789
+    },
+    {
+      "symbol": "MA",
+      "qty": 32.683377016,
+      "avg_entry_price": 541.78,
+      "current_price": 544.21,
+      "market_value": 17786.620606,
+      "unrealized_pl": 79.420606,
+      "unrealized_plpc": 0.00449
+    },
+    {
+      "symbol": "NOC",
+      "qty": 24.018114294,
+      "avg_entry_price": 527.76,
+      "current_price": 521.57,
+      "market_value": 12527.127872,
+      "unrealized_pl": -148.672128,
+      "unrealized_plpc": -0.01173
+    },
+    {
+      "symbol": "PSKY",
+      "qty": 2012.181818181,
+      "avg_entry_price": 8.8,
+      "current_price": 8.78,
+      "market_value": 17666.956364,
+      "unrealized_pl": -40.243636,
+      "unrealized_plpc": -0.00227
+    }
+  ]
+}
