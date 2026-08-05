@@ -92,3 +92,13 @@ FINBERT_MODEL_NAME: str = "ProsusAI/finbert"
 # ≈ 70 tokens), así que 128 captura el texto completo y acelera la inferencia en
 # CPU varias veces frente a 512. Configurable por si se procesan textos largos.
 FINBERT_MAX_LENGTH: int = int(os.getenv("FINBERT_MAX_LENGTH", "128"))
+
+# --- Linear probing sobre FinBERT (pivote agosto 2026: comparación de enfoques) ---
+FINBERT_FINETUNED_MODEL_PATH: Path = MODELS_DIR / "finbert_finetuned"
+FINETUNE_LR_HEAD: float = float(os.getenv("FINETUNE_LR_HEAD", "1e-4"))
+FINETUNE_EPOCHS: int = int(os.getenv("FINETUNE_EPOCHS", "3"))
+FINETUNE_BATCH_SIZE: int = int(os.getenv("FINETUNE_BATCH_SIZE", "16"))
+
+# --- Labeling manual / active learning ---
+LABELED_STORE_FILE: Path = DATA_DIR / "labeled" / "labeled_posts.csv"
+UNCERTAINTY_SAMPLE_SIZE: int = int(os.getenv("UNCERTAINTY_SAMPLE_SIZE", "100"))

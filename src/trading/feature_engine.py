@@ -39,6 +39,16 @@ _SENTIMENT_FILE = PROCESSED_DIR / "sentiment_scores.csv"
 _INDICATORS_FILE = PROCESSED_DIR / "indicators.parquet"
 _FEATURES_FILE = PROCESSED_DIR / "features.parquet"
 
+# Enfoques de sentimiento disponibles (pivote agosto 2026: comparación de
+# FinBERT baseline vs. linear probing vs. lexicón VADER). Cada uno escribe
+# su propio CSV de scores con el mismo schema (ver finbert_scorer.py,
+# finbert_finetuned_scorer.py, lexicon_scorer.py).
+_SENTIMENT_SOURCE_FILES: dict[str, Path] = {
+    "base": _SENTIMENT_FILE,
+    "finetuned": PROCESSED_DIR / "sentiment_scores_finetuned.csv",
+    "lexicon": PROCESSED_DIR / "sentiment_scores_lexicon.csv",
+}
+
 # ---------------------------------------------------------------------------
 # Columnas canónicas de salida (orden fijo para reproducibilidad)
 # ---------------------------------------------------------------------------
@@ -274,28 +284,53 @@ def _add_derived_indicators(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def build_features(
-    sentiment_path: Path = _SENTIMENT_FILE,
+    sentiment_path: Path | None = None,
+    sentiment_source: str = "base",
     indicators: pd.DataFrame | None = None,
     indicators_path: Path = _INDICATORS_FILE,
     min_mentions: int = MIN_MENTIONS_PER_DAY,
-    output_path: Path = _FEATURES_FILE,
+    output_path: Path | None = None,
 ) -> pd.DataFrame:
     """
     Construye el DataFrame de features combinando sentimiento e indicadores.
 
     Args:
-        sentiment_path: Ruta al CSV acumulativo de sentiment_scores.csv.
+        sentiment_path: Ruta al CSV de scores de sentimiento. Si es None, se
+                    resuelve a partir de sentiment_source. Si se pasa
+                    explícito, tiene prioridad sobre sentiment_source.
+        sentiment_source: Enfoque de sentimiento a usar: "base" (FinBERT
+                    off-the-shelf), "finetuned" (linear probing) o "lexicon"
+                    (VADER). Ver _SENTIMENT_SOURCE_FILES.
         indicators: DataFrame de indicadores ya cargado. Si es None se lee
                     indicators_path (Parquet).
         indicators_path: Ruta al Parquet de indicadores (usado si indicators=None).
         min_mentions: Umbral de menciones diarias por ticker para incluir la fila.
-        output_path: Ruta donde se persiste el Parquet de features.
+        output_path: Ruta donde se persiste el Parquet de features. Si es
+                    None, se resuelve a features.parquet para "base" o
+                    features_{sentiment_source}.parquet para los demás
+                    enfoques, para no pisar el Parquet de otro enfoque.
 
     Returns:
         DataFrame con columnas definidas en _OUTPUT_COLUMNS.
+
+    Raises:
+        ValueError: si sentiment_source no está en _SENTIMENT_SOURCE_FILES.
     """
+    if sentiment_source not in _SENTIMENT_SOURCE_FILES:
+        raise ValueError(
+            f"sentiment_source desconocido: '{sentiment_source}'. "
+            f"Esperado uno de {list(_SENTIMENT_SOURCE_FILES)}."
+        )
+    if sentiment_path is None:
+        sentiment_path = _SENTIMENT_SOURCE_FILES[sentiment_source]
+    if output_path is None:
+        output_path = (
+            _FEATURES_FILE if sentiment_source == "base"
+            else PROCESSED_DIR / f"features_{sentiment_source}.parquet"
+        )
+
     # --- Carga de inputs ---
-    logger.info("Cargando sentiment desde %s...", sentiment_path)
+    logger.info("Cargando sentiment (%s) desde %s...", sentiment_source, sentiment_path)
     sentiment = pd.read_csv(sentiment_path, dtype=str)
 
     required_sent = {"post_id", "timestamp", "ticker", "sentiment_label",
