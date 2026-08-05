@@ -315,3 +315,22 @@ MIN_ORDER_NOTIONAL=1.0
 HF_TOKEN=...    # para HuggingFace (opcional, FinBERT es público)
 SEED=42
 ```
+## Pivote actual (agosto 2026)
+
+Tras 12 experimentos con resultados nulos sobre series diarias del S&P 500,
+el proyecto pivotó a un estudio de eventos con foco visual. Nuevo scope:
+- 5 tickers (TSLA, AAPL, NVDA, GME, AMD)
+- Ventanas alrededor de eventos catalizadores (earnings, upgrades, viral moments)
+- Comparación de tres enfoques de sentimiento:
+  1. FinBERT off-the-shelf (baseline existente)
+  2. FinBERT con linear probing sobre labels manuales
+  3. Baseline neutro con lexicón (VADER)
+- Segmentación por liquidez de tickers
+- Output principal: visualizaciones interpretables (asesor: profe Camilo del lado de Sistemas)
+
+Nuevos módulos a construir en esta iteración:
+- src/sentiment/finbert_finetune.py: linear probing sobre embeddings [CLS]
+- src/sentiment/finbert_finetuned_scorer.py: inference con la cabeza entrenada
+- src/sentiment/lexicon_scorer.py: baseline VADER
+- src/labeling/: subsistema de active learning y persistencia de labels manuales
+- src/evaluation/sentiment_comparison.py: comparación entre los tres enfoques
