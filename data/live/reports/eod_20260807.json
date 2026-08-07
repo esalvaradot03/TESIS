@@ -1,58 +1,58 @@
 {
-  "timestamp": "2026-08-07T01:05:01.405708+00:00",
-  "equity": 92924.03,
-  "last_equity": 92085.32184886056,
+  "timestamp": "2026-08-07T22:05:16.115943+00:00",
+  "equity": 93430.58,
+  "last_equity": 92989.43385107398,
   "cash": 5044.7,
-  "buying_power": 266240.92,
-  "portfolio_value": 92924.03,
-  "day_pl": 504.66,
-  "day_pl_pct": 0.0055,
+  "buying_power": 267659.27,
+  "portfolio_value": 93430.58,
+  "day_pl": 642.37,
+  "day_pl_pct": 0.0069,
   "n_positions": 5,
   "positions": [
     {
       "symbol": "KO",
       "qty": 217.747171667,
       "avg_entry_price": 81.32,
-      "current_price": 86.9,
-      "market_value": 18922.229218,
-      "unrealized_pl": 1215.029218,
-      "unrealized_plpc": 0.06862
+      "current_price": 87.05,
+      "market_value": 18954.891294,
+      "unrealized_pl": 1247.691294,
+      "unrealized_plpc": 0.07046
     },
     {
       "symbol": "LOW",
       "qty": 83.988047241,
       "avg_entry_price": 211.55476,
-      "current_price": 218.4,
-      "market_value": 18342.989517,
-      "unrealized_pl": 574.91834,
-      "unrealized_plpc": 0.03236
+      "current_price": 222.2086,
+      "market_value": 18662.866394,
+      "unrealized_pl": 894.795217,
+      "unrealized_plpc": 0.05036
     },
     {
       "symbol": "MA",
       "qty": 32.683377016,
       "avg_entry_price": 541.78,
-      "current_price": 573.0001,
-      "market_value": 18727.578299,
-      "unrealized_pl": 1020.378299,
-      "unrealized_plpc": 0.05763
+      "current_price": 563.5,
+      "market_value": 18417.082949,
+      "unrealized_pl": 709.882949,
+      "unrealized_plpc": 0.04009
     },
     {
       "symbol": "NOC",
       "qty": 24.018114294,
       "avg_entry_price": 527.76,
-      "current_price": 567.74,
-      "market_value": 13636.044209,
-      "unrealized_pl": 960.244209,
-      "unrealized_plpc": 0.07575
+      "current_price": 572.0,
+      "market_value": 13738.361376,
+      "unrealized_pl": 1062.561376,
+      "unrealized_plpc": 0.08383
     },
     {
       "symbol": "PSKY",
       "qty": 2012.181818181,
       "avg_entry_price": 8.903192,
-      "current_price": 9.07,
-      "market_value": 18250.489091,
-      "unrealized_pl": 335.648025,
-      "unrealized_plpc": 0.01874
+      "current_price": 9.25,
+      "market_value": 18612.681818,
+      "unrealized_pl": 697.840752,
+      "unrealized_plpc": 0.03895
     }
   ]
 }
