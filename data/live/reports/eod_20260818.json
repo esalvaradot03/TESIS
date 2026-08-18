@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-08-18T21:46:49.418856+00:00",
+  "equity": 89449.88,
+  "last_equity": 92182.12754143307,
+  "cash": -13.81,
+  "buying_power": 250443.1,
+  "portfolio_value": 89449.88,
+  "day_pl": -2633.64,
+  "day_pl_pct": -0.0286,
+  "n_positions": 2,
+  "positions": [
+    {
+      "symbol": "BAC",
+      "qty": 745.64157094,
+      "avg_entry_price": 64.42,
+      "current_price": 64.1731,
+      "market_value": 47850.131096,
+      "unrealized_pl": -184.098904,
+      "unrealized_plpc": -0.00383
+    },
+    {
+      "symbol": "CVNA",
+      "qty": 635.709767072,
+      "avg_entry_price": 75.56,
+      "current_price": 65.46,
+      "market_value": 41613.561353,
+      "unrealized_pl": -6420.668647,
+      "unrealized_plpc": -0.13367
+    }
+  ]
+}
