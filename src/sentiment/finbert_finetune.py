@@ -109,17 +109,19 @@ class FinBERTHeadTrainer:
 
     def __init__(
         self,
-        hparams: FineTuneHyperparams = FineTuneHyperparams(),
+        hparams: FineTuneHyperparams | None = None,
         model_name: str = FINBERT_MODEL_NAME,
     ) -> None:
         """
         Carga el backbone congelado y crea la cabeza clasificadora.
 
         Args:
-            hparams: Hiperparámetros de entrenamiento.
+            hparams: Hiperparámetros de entrenamiento. Si es None, usa los
+                defaults de FineTuneHyperparams (se crea una instancia nueva
+                por trainer, no una compartida entre llamadas).
             model_name: Identificador HuggingFace del backbone (ProsusAI/finbert).
         """
-        self._hparams = hparams
+        self._hparams = hparams or FineTuneHyperparams()
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         logger.info("Cargando backbone FinBERT ('%s') congelado en %s...", model_name, self._device)
@@ -160,30 +162,31 @@ class FinBERTHeadTrainer:
         weights = counts.sum() / (len(counts) * counts)
         return torch.tensor(weights, dtype=torch.float32, device=self._device)
 
-    def _evaluate(
+    def _embed_all(self, texts: list[str]) -> torch.Tensor:
+        """
+        Calcula embeddings [CLS] para todos los textos, una sola vez.
+
+        El backbone está congelado, así que su salida para un texto dado es
+        idéntica en cada época — precalcular evita repetir el forward pass
+        de los 110M parámetros del backbone en cada una de las
+        FINETUNE_EPOCHS épocas (ver train()).
+        """
+        chunks = [self._embed_batch(batch) for batch in _iter_batches(texts, self._hparams.batch_size)]
+        return torch.cat(chunks, dim=0)
+
+    def _evaluate_embeddings(
         self,
-        texts: list[str],
-        labels: list[int],
+        embeddings: torch.Tensor,
+        targets: torch.Tensor,
         criterion: nn.Module,
     ) -> tuple[float, float]:
-        """Evalúa loss y accuracy de la cabeza en modo eval, sin actualizar pesos."""
+        """Evalúa loss y accuracy de la cabeza sobre embeddings ya calculados, sin actualizar pesos."""
         self.head.eval()
-        total_loss, n_batches, correct = 0.0, 0, 0
         with torch.no_grad():
-            for batch_texts, batch_labels in zip(
-                _iter_batches(texts, self._hparams.batch_size),
-                _iter_batches(labels, self._hparams.batch_size),
-            ):
-                embeddings = self._embed_batch(batch_texts)
-                targets = torch.tensor(batch_labels, dtype=torch.long, device=self._device)
-                logits = self.head(embeddings)
-                loss = criterion(logits, targets)
-                total_loss += loss.item()
-                n_batches += 1
-                correct += int((logits.argmax(dim=-1) == targets).sum().item())
-        avg_loss = total_loss / max(n_batches, 1)
-        accuracy = correct / max(len(texts), 1)
-        return avg_loss, accuracy
+            logits = self.head(embeddings)
+            loss = criterion(logits, targets)
+            accuracy = float((logits.argmax(dim=-1) == targets).float().mean().item())
+        return float(loss.item()), accuracy
 
     # ------------------------------------------------------------------
     # API pública
@@ -235,6 +238,12 @@ class FinBERTHeadTrainer:
             len(train_texts), len(val_texts), self._hparams.val_split,
         )
 
+        logger.info("Precalculando embeddings [CLS] del backbone congelado (una sola vez)...")
+        train_embeddings = self._embed_all(train_texts)
+        val_embeddings = self._embed_all(val_texts)
+        train_targets = torch.tensor(train_labels, dtype=torch.long, device=self._device)
+        val_targets = torch.tensor(val_labels, dtype=torch.long, device=self._device)
+
         class_weights = self._compute_class_weights(train_labels)
         criterion = nn.CrossEntropyLoss(weight=class_weights)
         optimizer = AdamW(
@@ -244,16 +253,17 @@ class FinBERTHeadTrainer:
         )
 
         history: dict[str, list[float]] = {"train_loss": [], "val_loss": [], "val_accuracy": []}
+        rng = np.random.default_rng(self._hparams.seed)
+        n_train = train_embeddings.shape[0]
 
         for epoch in range(self._hparams.epochs):
             self.head.train()
             epoch_loss, n_batches = 0.0, 0
-            for batch_texts, batch_labels in zip(
-                _iter_batches(train_texts, self._hparams.batch_size),
-                _iter_batches(train_labels, self._hparams.batch_size),
-            ):
-                embeddings = self._embed_batch(batch_texts)
-                targets = torch.tensor(batch_labels, dtype=torch.long, device=self._device)
+            perm = rng.permutation(n_train)
+            for start in range(0, n_train, self._hparams.batch_size):
+                batch_idx = perm[start: start + self._hparams.batch_size]
+                embeddings = train_embeddings[batch_idx]
+                targets = train_targets[batch_idx]
 
                 optimizer.zero_grad()
                 logits = self.head(embeddings)
@@ -265,7 +275,7 @@ class FinBERTHeadTrainer:
                 n_batches += 1
 
             train_loss = epoch_loss / max(n_batches, 1)
-            val_loss, val_accuracy = self._evaluate(val_texts, val_labels, criterion)
+            val_loss, val_accuracy = self._evaluate_embeddings(val_embeddings, val_targets, criterion)
 
             history["train_loss"].append(train_loss)
             history["val_loss"].append(val_loss)
@@ -319,6 +329,10 @@ class FinBERTHeadTrainer:
 
         Raises:
             FileNotFoundError: si no existe meta.json en model_dir.
+            ValueError: si el label_to_idx persistido no coincide con el
+                _LABEL_TO_IDX actual del módulo (la cabeza fue entrenada con
+                un mapeo de clases distinto al vigente — cargarla igual
+                mezclaría silenciosamente las probabilidades de clase).
         """
         meta_path = model_dir / "meta.json"
         if not meta_path.exists():
@@ -326,8 +340,16 @@ class FinBERTHeadTrainer:
                 f"No se encontró {meta_path}. Corré train() + save() primero."
             )
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        hparams = FineTuneHyperparams(**meta["hparams"])
 
+        saved_label_to_idx = meta.get("label_to_idx")
+        if saved_label_to_idx is not None and saved_label_to_idx != _LABEL_TO_IDX:
+            raise ValueError(
+                f"El label_to_idx persistido en {meta_path} ({saved_label_to_idx}) "
+                f"no coincide con el _LABEL_TO_IDX actual ({_LABEL_TO_IDX}). "
+                "Reentrená la cabeza (train() + save()) antes de cargarla."
+            )
+
+        hparams = FineTuneHyperparams(**meta["hparams"])
         instance = cls(hparams=hparams, model_name=model_name)
         state_dict = torch.load(model_dir / "head.pt", map_location=instance._device)
         instance.head.load_state_dict(state_dict)
@@ -358,6 +380,19 @@ if __name__ == "__main__":
             "(ver src/labeling/uncertainty_sampling.py)."
         )
         sys.exit(1)
+
+    # labeled_store.py permite que dos etiquetadores anoten el mismo post_id
+    # (para medir kappa en inter_rater.py); sin deduplicar acá, el mismo
+    # texto podría caer a la vez en train y en val dentro de train_test_split
+    # y filtrar señal de train hacia val. Se resuelve igual que el golden set
+    # de sentiment_comparison.py: se queda la etiqueta más reciente por post.
+    before = len(labels_df)
+    labels_df = labels_df.sort_values("timestamp").drop_duplicates(subset=["post_id"], keep="last")
+    if before - len(labels_df):
+        print(
+            f"{before - len(labels_df)} filas colapsadas por post_id con más de un "
+            "etiquetador (se usó la más reciente) para evitar fuga train/val."
+        )
 
     trainer = FinBERTHeadTrainer()
     history = trainer.train(labels_df["text"].tolist(), labels_df["label"].tolist())

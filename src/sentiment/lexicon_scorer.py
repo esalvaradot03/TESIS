@@ -75,8 +75,22 @@ class LexiconScorer:
         columnas estándar: prob_positive/negative/neutral se toman
         directamente de pos/neg/neu (ya suman ~1, es más fiel que derivarlas
         del compound score). sentiment_label sale de los umbrales estándar
-        de VADER sobre compound; sentiment_score es la probabilidad de la
-        clase predicha, con el mismo significado que en FinBERTScorer.
+        de VADER sobre compound (convención oficial de la librería), NO del
+        argmax de pos/neg/neu — la mayoría de las palabras de un texto son
+        neutras, así que pos/neg/neu casi siempre tienen a neu como máximo;
+        clasificar por argmax degradaría VADER a un clasificador casi
+        siempre "neutral" e inútil como baseline.
+
+        Por eso sentiment_score = prob_positive/negative/neutral[label] NO
+        es necesariamente la probabilidad máxima de las tres (a diferencia
+        de FinBERTScorer, donde sentiment_label sí sale de argmax y
+        sentiment_score sí es siempre el máximo): compound y pos/neg/neu son
+        señales relacionadas pero no derivadas una de la otra en VADER. Es
+        una propiedad intencional del lexicón, no un bug — no comparar
+        sentiment_score entre lexicon y los dos enfoques FinBERT como si
+        fuera la misma cantidad; para eso usar sentiment_label (accuracy/F1
+        en sentiment_comparison.py) o net_sentiment (prob_positive −
+        prob_negative en feature_engine.py), que sí son comparables.
 
         Args:
             texts: Lista de textos limpios (salida de preprocessor.clean_text).

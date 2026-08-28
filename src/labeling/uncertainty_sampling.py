@@ -105,10 +105,14 @@ def select_uncertain_posts(
     labeled = load_labels(labeled_store_path)
     labeled_ids = set(labeled["post_id"])
     if labeled_ids:
+        before_labeled_filter = len(scores)
         scores = scores[~scores["post_id"].isin(labeled_ids)]
-        logger.info(
-            "%d posts excluidos por ya tener label manual.", len(labeled_ids)
-        )
+        excluded = before_labeled_filter - len(scores)
+        if excluded:
+            logger.info(
+                "%d posts excluidos por ya tener label manual (de %d etiquetados en total).",
+                excluded, len(labeled_ids),
+            )
 
     scores["entropy"] = compute_entropy(scores[_PROB_COLUMNS].to_numpy())
     scores = scores.sort_values("entropy", ascending=False)

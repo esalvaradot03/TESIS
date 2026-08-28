@@ -35,7 +35,7 @@ from config.settings import (
     FINBERT_MODEL_NAME,
     PROCESSED_DIR,
 )
-from src.sentiment.finbert_finetune import FinBERTClassifierHead, _IDX_TO_LABEL
+from src.sentiment.finbert_finetune import FinBERTClassifierHead, _IDX_TO_LABEL, _LABEL_TO_IDX
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +109,14 @@ class FinBERTFinetunedScorer:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         self._max_length = meta.get("hparams", {}).get("max_length", max_length)
 
+        saved_label_to_idx = meta.get("label_to_idx")
+        if saved_label_to_idx is not None and saved_label_to_idx != _LABEL_TO_IDX:
+            raise ValueError(
+                f"El label_to_idx persistido en {meta_path} ({saved_label_to_idx}) "
+                f"no coincide con el _LABEL_TO_IDX actual ({_LABEL_TO_IDX}). "
+                "Reentrená la cabeza (finbert_finetune.py) antes de usarla para scoring."
+            )
+
         logger.info("Cargando backbone FinBERT ('%s') en %s...", model_name, self._device)
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
         self._backbone = AutoModel.from_pretrained(model_name)
@@ -151,12 +159,15 @@ class FinBERTFinetunedScorer:
         results: list[dict] = []
         for row in probs:
             idx = int(row.argmax())
+            # Se lee cada probabilidad vía _IDX_TO_LABEL (no por posición fija
+            # row[0]/row[1]/row[2]) para no depender del orden de _LABEL_TO_IDX.
+            by_label = {_IDX_TO_LABEL[i]: float(row[i]) for i in range(len(row))}
             results.append({
                 "sentiment_label": _IDX_TO_LABEL[idx],
                 "sentiment_score": float(row[idx]),
-                "prob_positive": float(row[0]),
-                "prob_negative": float(row[1]),
-                "prob_neutral": float(row[2]),
+                "prob_positive": by_label["positive"],
+                "prob_negative": by_label["negative"],
+                "prob_neutral": by_label["neutral"],
             })
         return results
 

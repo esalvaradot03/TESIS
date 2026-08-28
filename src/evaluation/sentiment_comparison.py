@@ -98,30 +98,31 @@ def _load_predictions(scores_path: Path) -> pd.DataFrame:
     return scores[["post_id", "sentiment_label"]].rename(columns={"sentiment_label": "pred_label"})
 
 
-# ---------------------------------------------------------------------------
-# Comparación
-# ---------------------------------------------------------------------------
-
-def compare_approaches(
-    golden_path: Path = LABELED_STORE_FILE,
-    score_paths: dict[str, Path] = _DEFAULT_SCORE_PATHS,
-) -> pd.DataFrame:
+def _merge_by_approach(
+    golden_path: Path,
+    score_paths: dict[str, Path],
+) -> dict[str, pd.DataFrame]:
     """
-    Compara accuracy y macro-F1 de cada enfoque contra el golden set.
+    Golden set unido con las predicciones de cada enfoque, una sola vez.
 
-    Enfoques cuyo CSV de scores no exista se omiten con un warning (por
-    ejemplo, si todavía no se corrió finbert_finetuned_scorer.py).
+    Punto de entrada compartido de compare_approaches() y
+    confusion_matrices(): ambas derivan sus métricas del mismo merge
+    (golden × predicciones por post_id), así que calcularlo una sola vez y
+    pasarlo a las dos evita releer y re-unir los mismos CSV dos veces (ver
+    el bloque CLI, que llama a ambas funciones).
 
     Args:
         golden_path: Ruta al store de labels manuales.
         score_paths: Dict {nombre_enfoque: ruta_csv_scores}.
 
     Returns:
-        DataFrame indexado por nombre de enfoque, columnas n_posts, accuracy, macro_f1.
+        Dict {nombre_enfoque: DataFrame con post_id, gold_label, pred_label}.
+        Enfoques sin CSV de scores, o sin posts en común con el golden set,
+        se omiten (con warning).
     """
     golden = _load_golden_labels(golden_path)
 
-    rows: list[dict] = []
+    merged_by_approach: dict[str, pd.DataFrame] = {}
     for name, path in score_paths.items():
         if not path.exists():
             logger.warning("Scores no encontrados para '%s' en %s; se omite.", name, path)
@@ -133,6 +134,43 @@ def compare_approaches(
             logger.warning("Sin posts en común entre el golden set y '%s'.", name)
             continue
 
+        merged_by_approach[name] = merged
+    return merged_by_approach
+
+
+# ---------------------------------------------------------------------------
+# Comparación
+# ---------------------------------------------------------------------------
+
+def compare_approaches(
+    golden_path: Path = LABELED_STORE_FILE,
+    score_paths: dict[str, Path] = _DEFAULT_SCORE_PATHS,
+    merged_by_approach: dict[str, pd.DataFrame] | None = None,
+) -> pd.DataFrame:
+    """
+    Compara accuracy y macro-F1 de cada enfoque contra el golden set.
+
+    Enfoques cuyo CSV de scores no exista se omiten con un warning (por
+    ejemplo, si todavía no se corrió finbert_finetuned_scorer.py).
+
+    Args:
+        golden_path: Ruta al store de labels manuales. Ignorado si se pasa
+            merged_by_approach.
+        score_paths: Dict {nombre_enfoque: ruta_csv_scores}. Ignorado si se
+            pasa merged_by_approach.
+        merged_by_approach: Resultado ya calculado de _merge_by_approach(),
+            para reusarlo entre esta función y confusion_matrices() sin
+            releer/re-unir los CSV (ver bloque CLI). Si es None (default),
+            se calcula internamente.
+
+    Returns:
+        DataFrame indexado por nombre de enfoque, columnas n_posts, accuracy, macro_f1.
+    """
+    if merged_by_approach is None:
+        merged_by_approach = _merge_by_approach(golden_path, score_paths)
+
+    rows: list[dict] = []
+    for name, merged in merged_by_approach.items():
         accuracy = accuracy_score(merged["gold_label"], merged["pred_label"])
         macro_f1 = f1_score(
             merged["gold_label"], merged["pred_label"],
@@ -155,30 +193,29 @@ def compare_approaches(
 def confusion_matrices(
     golden_path: Path = LABELED_STORE_FILE,
     score_paths: dict[str, Path] = _DEFAULT_SCORE_PATHS,
+    merged_by_approach: dict[str, pd.DataFrame] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """
     Calcula la matriz de confusión de cada enfoque contra el golden set.
 
     Args:
-        golden_path: Ruta al store de labels manuales.
-        score_paths: Dict {nombre_enfoque: ruta_csv_scores}.
+        golden_path: Ruta al store de labels manuales. Ignorado si se pasa
+            merged_by_approach.
+        score_paths: Dict {nombre_enfoque: ruta_csv_scores}. Ignorado si se
+            pasa merged_by_approach.
+        merged_by_approach: Resultado ya calculado de _merge_by_approach()
+            (ver compare_approaches). Si es None (default), se calcula
+            internamente.
 
     Returns:
         Dict {nombre_enfoque: DataFrame [3x3]} indexado y con columnas en
         _LABELS_ORDER (filas = gold, columnas = predicho).
     """
-    golden = _load_golden_labels(golden_path)
+    if merged_by_approach is None:
+        merged_by_approach = _merge_by_approach(golden_path, score_paths)
 
     matrices: dict[str, pd.DataFrame] = {}
-    for name, path in score_paths.items():
-        if not path.exists():
-            continue
-
-        preds = _load_predictions(path)
-        merged = pd.merge(golden, preds, on="post_id", how="inner")
-        if merged.empty:
-            continue
-
+    for name, merged in merged_by_approach.items():
         cm = confusion_matrix(merged["gold_label"], merged["pred_label"], labels=_LABELS_ORDER)
         matrices[name] = pd.DataFrame(cm, index=_LABELS_ORDER, columns=_LABELS_ORDER)
 
@@ -196,11 +233,13 @@ if __name__ == "__main__":
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    summary = compare_approaches()
+    merged = _merge_by_approach(LABELED_STORE_FILE, _DEFAULT_SCORE_PATHS)
+
+    summary = compare_approaches(merged_by_approach=merged)
     print("\n=== Accuracy / Macro-F1 por enfoque ===")
     print(summary.to_string())
 
-    matrices = confusion_matrices()
+    matrices = confusion_matrices(merged_by_approach=merged)
     for approach_name, matrix in matrices.items():
         print(f"\n=== Matriz de confusión: {approach_name} (filas=gold, cols=pred) ===")
         print(matrix.to_string())

@@ -295,42 +295,62 @@ def build_features(
     Construye el DataFrame de features combinando sentimiento e indicadores.
 
     Args:
-        sentiment_path: Ruta al CSV de scores de sentimiento. Si es None, se
-                    resuelve a partir de sentiment_source. Si se pasa
-                    explícito, tiene prioridad sobre sentiment_source.
-        sentiment_source: Enfoque de sentimiento a usar: "base" (FinBERT
-                    off-the-shelf), "finetuned" (linear probing) o "lexicon"
-                    (VADER). Ver _SENTIMENT_SOURCE_FILES.
+        sentiment_path: Ruta al CSV de scores de sentimiento. Si se pasa
+                    explícito, tiene prioridad sobre sentiment_source y el
+                    nombre de salida se deriva de este path (matcheando
+                    contra _SENTIMENT_SOURCE_FILES, o su stem si no matchea
+                    ninguno), no del parámetro sentiment_source por
+                    separado. Si es None, se resuelve a partir de
+                    sentiment_source.
+        sentiment_source: Enfoque de sentimiento a usar cuando sentiment_path
+                    es None: "base" (FinBERT off-the-shelf), "finetuned"
+                    (linear probing) o "lexicon" (VADER). Ver
+                    _SENTIMENT_SOURCE_FILES. Ignorado si sentiment_path se
+                    pasa explícito (ver arriba).
         indicators: DataFrame de indicadores ya cargado. Si es None se lee
                     indicators_path (Parquet).
         indicators_path: Ruta al Parquet de indicadores (usado si indicators=None).
         min_mentions: Umbral de menciones diarias por ticker para incluir la fila.
         output_path: Ruta donde se persiste el Parquet de features. Si es
-                    None, se resuelve a features.parquet para "base" o
-                    features_{sentiment_source}.parquet para los demás
-                    enfoques, para no pisar el Parquet de otro enfoque.
+                    None, se resuelve a features.parquet para el enfoque
+                    "base" o features_{enfoque}.parquet para los demás,
+                    para no pisar el Parquet de otro enfoque.
 
     Returns:
         DataFrame con columnas definidas en _OUTPUT_COLUMNS.
 
     Raises:
-        ValueError: si sentiment_source no está en _SENTIMENT_SOURCE_FILES.
+        ValueError: si sentiment_path es None y sentiment_source no está en
+            _SENTIMENT_SOURCE_FILES.
     """
-    if sentiment_source not in _SENTIMENT_SOURCE_FILES:
-        raise ValueError(
-            f"sentiment_source desconocido: '{sentiment_source}'. "
-            f"Esperado uno de {list(_SENTIMENT_SOURCE_FILES)}."
+    # El nombre de salida se deriva del sentiment_path efectivo, no del
+    # parámetro sentiment_source por separado: si se pasa un sentiment_path
+    # explícito (como hace el CLI de este módulo vía sys.argv) sin también
+    # pasar sentiment_source, resolver el output solo por sentiment_source
+    # (que se quedaría en su default "base") pisaría en silencio
+    # features.parquet con datos de otro enfoque.
+    if sentiment_path is not None:
+        resolved_source = next(
+            (src for src, p in _SENTIMENT_SOURCE_FILES.items() if p == sentiment_path),
+            sentiment_path.stem,
         )
-    if sentiment_path is None:
+    else:
+        if sentiment_source not in _SENTIMENT_SOURCE_FILES:
+            raise ValueError(
+                f"sentiment_source desconocido: '{sentiment_source}'. "
+                f"Esperado uno de {list(_SENTIMENT_SOURCE_FILES)}."
+            )
         sentiment_path = _SENTIMENT_SOURCE_FILES[sentiment_source]
+        resolved_source = sentiment_source
+
     if output_path is None:
         output_path = (
-            _FEATURES_FILE if sentiment_source == "base"
-            else PROCESSED_DIR / f"features_{sentiment_source}.parquet"
+            _FEATURES_FILE if resolved_source == "base"
+            else PROCESSED_DIR / f"features_{resolved_source}.parquet"
         )
 
     # --- Carga de inputs ---
-    logger.info("Cargando sentiment (%s) desde %s...", sentiment_source, sentiment_path)
+    logger.info("Cargando sentiment (%s) desde %s...", resolved_source, sentiment_path)
     sentiment = pd.read_csv(sentiment_path, dtype=str)
 
     required_sent = {"post_id", "timestamp", "ticker", "sentiment_label",
