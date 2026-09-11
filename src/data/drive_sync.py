@@ -37,16 +37,25 @@ ROOT_DIR = Path(__file__).resolve().parents[3]
 CREDENTIALS_FILE = Path(os.getenv("GOOGLE_CREDENTIALS_FILE", ROOT_DIR / "credentials.json"))
 TOKEN_FILE = Path(os.getenv("GOOGLE_TOKEN_FILE", ROOT_DIR / "token.json"))
 EXTERNAL_DATA_ROOT = Path(os.getenv("TESIS_DATA_ROOT", "D:/trading-data"))
-DRIVE_FOLDER_NAME = os.getenv("DRIVE_FOLDER_NAME", "tesis-trading")
+# Carpeta raíz en Drive. Default "TESIS" (Mi unidad/TESIS/...).
+DRIVE_FOLDER_NAME = os.getenv("DRIVE_FOLDER_NAME", "TESIS")
+# Nombre de la subcarpeta de datos externos dentro de la raíz en Drive.
+# Si subiste manualmente tu D:/trading-data, en Drive quedó como "trading-data".
+DRIVE_EXTERNAL_SUBDIR = os.getenv("DRIVE_EXTERNAL_SUBDIR", "trading-data")
 
-SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+# IMPORTANTE — scope OAuth:
+#   - "drive.readonly": necesario para LEER archivos que subiste MANUALMENTE
+#     (por el navegador). El scope "drive.file" solo ve lo que sube la propia app.
+#   - Como acá solo descargamos, "drive.readonly" es lo correcto y más seguro.
+# Configurable por si prefieres el scope completo.
+SCOPES = [os.getenv("GOOGLE_DRIVE_SCOPE", "https://www.googleapis.com/auth/drive.readonly")]
 
 # Mapa: nombre_sección → (subcarpeta_en_drive, destino_local)
 SYNC_TARGETS = {
-    "raw":       ("data/raw",        ROOT_DIR / "data" / "raw"),
-    "processed": ("data/processed",  ROOT_DIR / "data" / "processed"),
-    "models":    ("models",          ROOT_DIR / "models"),
-    "external":  ("datos-externos",  EXTERNAL_DATA_ROOT),
+    "raw":       ("data/raw",              ROOT_DIR / "data" / "raw"),
+    "processed": ("data/processed",        ROOT_DIR / "data" / "processed"),
+    "models":    ("models",                ROOT_DIR / "models"),
+    "external":  (DRIVE_EXTERNAL_SUBDIR,   EXTERNAL_DATA_ROOT),
 }
 
 
