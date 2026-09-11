@@ -373,11 +373,15 @@ dashboard interactivo (pendiente de Sistemas, ver abajo).
   institucional bajo, sentimiento FinBERT más alto de todo el corpus vivo
   +0.304, entrada al S&P 500 jul-2025 +13.6% en un día)
 
-Solo **DIS y CMG** tienen cobertura histórica de texto confirmada (bucket
-`stocktwits_nyu/messages/`). Para NCLH/CRWD/TGT/DDOG la única fuente en vivo
-es el stream reciente de StockTwits (no hay búsqueda histórica) — gap
-metodológico real para el muestreo LR estratificado por año en esos 4
-tickers, a resolver con Sergio.
+Los **6 tickers** tienen cobertura histórica en el bucket NYU (verificado
+sep-2026; mensajes con label nativo 2010–2022: DIS 217k, CMG 59k, NCLH 58k,
+TGT 38k, CRWD 35k, DDOG 12k). Límites: CRWD y DDOG solo desde su IPO (2019);
+NCLH tiene <300 mensajes/año antes de 2020. El bucket viene partido:
+`symbol_sentiments/` (message_id, created_at, symbol_list) y `messages/`
+(solo message_id, message_body) — ticker y fecha salen del primero y se unen
+al texto por message_id. Como `symbol_sentiments/` solo trae mensajes con
+label Bullish/Bearish, el pool está sesgado hacia sentimiento autodeclarado
+(documentar en el codebook). El stream en vivo queda fuera del muestreo.
 
 ### Protocolo de pre-registro (no negociable)
 1. Toda hipótesis nueva se compromete por escrito en
@@ -391,8 +395,11 @@ tickers, a resolver con Sergio.
 ### Estado de la implementación del pivote
 ```
 research/event_study/
-├── build_corpus.py           ✓ pool NYU + StockTwits en vivo, sample_random(),
-│                                escribe lotes de etiquetado (l0, lr, lu1-4)
+├── build_corpus.py           ✓ pool NYU (join symbol_sentiments ⋈ messages,
+│                                caché en data/processed/), 1000 pares
+│                                estratificados por (ticker, año), lotes
+│                                l0/doble/test/train agrupados por post_id
+│                                + manifest.json
 ├── kappa_calculator.py       ✓ Cohen's kappa entre dos CSVs de etiquetado
 ├── event_windows.py          ✓ earnings + upgrades/downgrades vía yfinance
 ├── linear_probe.py           ⏳ pendiente — OJO: build_corpus.py etiqueta por
@@ -405,8 +412,8 @@ research/event_study/
 ├── car_analysis.py           ⏳ pendiente (bloqueado por el pre-registro, regla 1)
 └── results_event_study.md    ⏳ pendiente
 
-data/manual_labels/           ⏳ vacío — falta correr build_corpus.py con acceso
-                                  real a D:\trading-data\ y/o StockTwits en vivo
+data/manual_labels/           CSVs de etiquetado (gitignored, van por Drive);
+                                  solo manifest.json se commitea
 docs/codebook_etiquetado.md   ⏳ referenciado en conversaciones previas pero no
                                   existe en el repo — falta escribirlo/commitearlo
 docs/pre_registro_event_study.md  ⏳ pendiente

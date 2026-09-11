@@ -6,15 +6,18 @@ menciona dos tickers del estudio produce dos filas independientes, una por
 ticker, porque el sentimiento hacia cada ticker puede ser opuesto en el
 mismo texto ("vendo $DIS para entrar a $CMG").
 
-Fuentes, según cobertura de cada ticker:
-  - **NYU** (`D:\\trading-data\\stocktwits_nyu\\messages\\`): texto crudo
-    histórico. Cobertura confirmada solo para DIS y CMG. Este bucket nunca
-    se había leído en el repo (solo `symbol_sentiments/`, sin texto), así
-    que el schema se detecta en ejecución probando nombres candidatos y
-    falla con las columnas reales si ninguno matchea.
-  - **StockTwits en vivo**: cubre los 6 tickers pero el endpoint público
-    solo sirve el stream reciente, no búsqueda histórica — no aporta
-    profundidad por año para NCLH/CRWD/TGT/DDOG.
+Fuentes:
+  - **NYU** (`D:\\trading-data\\stocktwits_nyu\\`), fuente única por defecto.
+    Cubre los 6 tickers entre 2010 y 2022 (CRWD y DDOG desde su IPO en 2019;
+    NCLH casi todo desde 2020). El bucket viene partido en dos:
+    `symbol_sentiments/` trae (message_id, created_at, symbol_list) y
+    `messages/` trae solo (message_id, message_body); se unen por message_id.
+    OJO: symbol_sentiments/ solo contiene mensajes con label nativo
+    Bullish/Bearish, así que el pool está sesgado hacia mensajes con
+    sentimiento autodeclarado (documentarlo en el codebook).
+  - **StockTwits en vivo** (opcional, `--include-live`): solo el stream
+    reciente, sin búsqueda histórica, y el sample cambia según cuándo se
+    corra. Fuera del diseño pre-registrado.
 
 Diseño de muestreo (pre-registrado, SEED=42):
   1000 pares, estratificados por (ticker, año), mínimo 10 por ticker,
@@ -23,8 +26,10 @@ Diseño de muestreo (pre-registrado, SEED=42):
     doble  200 pares — kappa primario, AMBOS etiquetan los mismos
     test   300 pares — 150/150, sin solapamiento
     train  400 pares — 200/200, sin solapamiento
-  Cada anotador recibe 650 pares. El orden de filas se randomiza por
-  (lote, anotador) con semillas derivadas de SEED para evitar sesgo de orden.
+  Todos los pares de un mismo post caen en el mismo lote (sin fuga de texto
+  entre train y test). Cada anotador recibe 650 pares. El orden de filas se
+  randomiza por (lote, anotador) con semillas derivadas de SEED para evitar
+  sesgo de orden.
 
 Uso:
     python -m research.event_study.build_corpus
@@ -32,6 +37,7 @@ Uso:
 """
 
 import ast
+import csv
 import hashlib
 import json
 import logging
@@ -41,7 +47,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from config.settings import DATA_DIR, SEED, STOCKTWITS_NYU_MESSAGES
+from config.settings import DATA_DIR, SEED, STOCKTWITS_NYU_MESSAGES, STOCKTWITS_NYU_SYMBOL_SENTIMENTS
 from src.sentiment.preprocessor import build_input_text, clean_text
 
 logger = logging.getLogger(__name__)
@@ -49,8 +55,8 @@ logger = logging.getLogger(__name__)
 # Los 6 tickers del event study (decididos, no cambiar).
 TICKERS: list[str] = ["NCLH", "DIS", "CRWD", "TGT", "CMG", "DDOG"]
 
-# Tickers con cobertura histórica confirmada en el bucket NYU.
-NYU_COVERED_TICKERS: set[str] = {"DIS", "CMG"}
+# Tickers con cobertura histórica en el bucket NYU (los 6, verificado sep-2026).
+NYU_COVERED_TICKERS: set[str] = set(TICKERS)
 
 ANNOTATORS: list[str] = ["camilo", "esteban"]
 
@@ -67,6 +73,10 @@ _BATCHES: dict[str, tuple[int, bool]] = {
 
 _MANUAL_LABELS_DIR = DATA_DIR / "manual_labels"
 
+# Caché del join NYU (escanear messages/ son ~55 GB). Ignorado por git.
+_NYU_CACHE_DIR = DATA_DIR / "processed"
+_NYU_CACHE_COLUMNS: list[str] = ["message_id", "created_at", "symbol_list", "message_body"]
+
 # Columnas del pool interno (incluye procedencia y año para estratificar).
 _POOL_COLUMNS: list[str] = [
     "post_id", "target_ticker", "tickers_detectados", "fecha", "clean_text", "year", "source",
@@ -78,17 +88,9 @@ _OUTPUT_COLUMNS: list[str] = [
     "label", "confianza", "base", "nota",
 ]
 
-# Nombres candidatos del bucket NYU messages/ (mismo dataset que
-# symbol_sentiments/: message_id, user_id, created_at, sentiment, symbol_list;
-# 'body' es el nombre nativo del campo de texto en la API de StockTwits).
-_TEXT_COLUMN_CANDIDATES: list[str] = ["body", "text", "message", "message_body"]
-_TIMESTAMP_COLUMN_CANDIDATES: list[str] = ["created_at", "timestamp", "date"]
-_SYMBOL_COLUMN_CANDIDATES: list[str] = ["symbol_list", "symbols"]
-_ID_COLUMN_CANDIDATES: list[str] = ["message_id", "id"]
-
 
 # ---------------------------------------------------------------------------
-# Fuente NYU (histórica; solo DIS/CMG confirmados)
+# Fuente NYU (histórica; los 6 tickers)
 # ---------------------------------------------------------------------------
 
 def _parse_symbol_list(cell: object) -> list[str]:
@@ -111,67 +113,111 @@ def _parse_symbol_list(cell: object) -> list[str]:
     return []
 
 
-def _require_column(columns: list[str], candidates: list[str], role: str, path: Path) -> str:
-    """Devuelve la primera columna candidata presente, o falla listando las reales."""
-    for candidate in candidates:
-        if candidate in columns:
-            return candidate
-    raise ValueError(
-        f"No se encontró columna de {role} en {path}. Candidatas probadas: {candidates}. "
-        f"Columnas reales: {columns}. Ajustá las constantes *_COLUMN_CANDIDATES en "
-        "build_corpus.py si el dataset NYU usa otro nombre."
-    )
-
-
-def detect_nyu_schema(sample_path: Path) -> dict[str, str | None]:
+def _load_nyu_metadata(tickers: set[str], sentiments_dir: Path) -> pd.DataFrame:
     """
-    Detecta las columnas id/timestamp/símbolos/texto del bucket NYU messages/.
+    Lee symbol_sentiments/ y devuelve los mensajes que mencionan algún ticker.
 
     Args:
-        sample_path: Un CSV cualquiera del bucket, para leer solo su cabecera.
+        tickers: Tickers a conservar.
+        sentiments_dir: Directorio NYU symbol_sentiments/.
 
     Returns:
-        Dict con las claves id (opcional, None si no aparece), timestamp,
-        symbols y text.
-
-    Raises:
-        ValueError: si falta alguna columna obligatoria (timestamp/symbols/text).
+        DataFrame (message_id, created_at, symbol_list) con symbol_list como
+        JSON array normalizado, un registro por message_id.
     """
-    columns = list(pd.read_csv(sample_path, nrows=1).columns)
-    return {
-        "id": next((c for c in _ID_COLUMN_CANDIDATES if c in columns), None),
-        "timestamp": _require_column(columns, _TIMESTAMP_COLUMN_CANDIDATES, "timestamp", sample_path),
-        "symbols": _require_column(columns, _SYMBOL_COLUMN_CANDIDATES, "símbolos", sample_path),
-        "text": _require_column(columns, _TEXT_COLUMN_CANDIDATES, "texto", sample_path),
-    }
+    pattern = "|".join(sorted(tickers))
+    frames: list[pd.DataFrame] = []
+    for path in sorted(sentiments_dir.glob("*.csv")):
+        for chunk in pd.read_csv(path, usecols=["message_id", "created_at", "symbol_list"],
+                                 dtype=str, chunksize=500_000):
+            # Prefiltro barato por substring; el filtro exacto va tras parsear.
+            chunk = chunk[chunk["symbol_list"].str.contains(pattern, na=False)]
+            if not chunk.empty:
+                frames.append(chunk)
+    if not frames:
+        return pd.DataFrame(columns=["message_id", "created_at", "symbol_list"])
+
+    meta = pd.concat(frames, ignore_index=True)
+    symbols = meta["symbol_list"].map(_parse_symbol_list)
+    keep = symbols.map(lambda syms: any(s in tickers for s in syms))
+    meta = meta[keep].assign(symbol_list=symbols[keep].map(json.dumps))
+    return meta.drop_duplicates("message_id").reset_index(drop=True)
 
 
-def _read_nyu_file(path: Path, schema: dict[str, str | None], tickers: set[str]) -> pd.DataFrame:
-    """Lee un CSV NYU, filtra a `tickers` y explota a una fila por (post, target_ticker)."""
-    usecols = [c for c in {schema["id"], schema["timestamp"], schema["symbols"], schema["text"]} if c]
-    df = pd.read_csv(path, usecols=usecols, dtype=str, encoding="utf-8", encoding_errors="replace")
+def _scan_messages_file(path: Path, ids: set[str]) -> pd.DataFrame:
+    """
+    Devuelve (message_id, message_body) de un CSV de messages/ para los ids pedidos.
 
-    df["_symbols"] = df[schema["symbols"]].map(_parse_symbol_list)
-    df["_matched"] = df["_symbols"].map(lambda syms: [s for s in syms if s in tickers])
-    df = df[df["_matched"].map(len) > 0]
-    if df.empty:
-        return pd.DataFrame(columns=_POOL_COLUMNS)
+    Varios archivos del bucket tienen comillas mal cerradas que tumban el
+    parser C de pandas ("Buffer overflow caught"); en ese caso se relee el
+    archivo completo con el módulo csv, más lento pero tolerante.
+    """
+    try:
+        hits = [
+            chunk[chunk["message_id"].isin(ids)]
+            for chunk in pd.read_csv(path, dtype=str, chunksize=1_000_000,
+                                     encoding="utf-8", encoding_errors="replace")
+        ]
+        return pd.concat(hits, ignore_index=True)[["message_id", "message_body"]]
+    except pd.errors.ParserError as exc:
+        logger.warning("%s: parser C falló (%s); se relee con el módulo csv.", path.name, str(exc)[:80])
 
-    ids = df[schema["id"]].astype(str) if schema["id"] else pd.Series(
-        [f"{path.stem}_{i}" for i in df.index], index=df.index
-    )
-    fechas = pd.to_datetime(df[schema["timestamp"]], errors="coerce", utc=True)
+    csv.field_size_limit(2**31 - 1)
+    rows: list[tuple[str, str]] = []
+    with path.open(encoding="utf-8", errors="replace", newline="") as fh:
+        reader = csv.reader(fh)
+        next(reader, None)
+        for row in reader:
+            if len(row) >= 2 and row[0] in ids:
+                rows.append((row[0], row[1]))
+    return pd.DataFrame(rows, columns=["message_id", "message_body"])
 
+
+def _build_nyu_cache(
+    tickers: set[str], sentiments_dir: Path, messages_dir: Path, cache_path: Path,
+) -> pd.DataFrame:
+    """
+    Une symbol_sentiments/ ⋈ messages/ por message_id y guarda el resultado.
+
+    Returns:
+        DataFrame con _NYU_CACHE_COLUMNS (solo mensajes con texto).
+    """
+    meta = _load_nyu_metadata(tickers, sentiments_dir)
+    ids = set(meta["message_id"])
+    logger.info("symbol_sentiments/: %d mensajes mencionan %s.", len(ids), sorted(tickers))
+
+    files = sorted(messages_dir.glob("*.csv"))
+    texts: list[pd.DataFrame] = []
+    for i, path in enumerate(files, start=1):
+        texts.append(_scan_messages_file(path, ids))
+        logger.info("messages/ %d/%d (%s): %d textos.", i, len(files), path.name, len(texts[-1]))
+
+    text = pd.concat(texts, ignore_index=True).drop_duplicates("message_id")
+    joined = meta.merge(text, on="message_id", how="inner")[_NYU_CACHE_COLUMNS]
+    logger.info("Join NYU: %d de %d mensajes con texto.", len(joined), len(meta))
+
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    joined.to_parquet(cache_path, index=False)
+    logger.info("Caché NYU escrito en %s", cache_path)
+    return joined
+
+
+def _explode_nyu_pairs(raw: pd.DataFrame, tickers: set[str]) -> pd.DataFrame:
+    """Convierte el join NYU en pares (post, target_ticker) con _POOL_COLUMNS."""
+    fechas = pd.to_datetime(raw["created_at"], errors="coerce", utc=True)
     rows: list[dict] = []
-    for idx, row in df.iterrows():
-        fecha = fechas.loc[idx]
+    for post_id, fecha, symbols_json, body in zip(
+        raw["message_id"], fechas, raw["symbol_list"], raw["message_body"]
+    ):
         if pd.isna(fecha):
             continue
-        text = clean_text(build_input_text(str(row[schema["text"]]), ""))
-        symbols_json = json.dumps(row["_symbols"])
-        for ticker in row["_matched"]:
+        symbols = json.loads(symbols_json)
+        text = clean_text(build_input_text(str(body), ""))
+        for ticker in symbols:
+            if ticker not in tickers:
+                continue
             rows.append({
-                "post_id": ids.loc[idx],
+                "post_id": str(post_id),
                 "target_ticker": ticker,
                 "tickers_detectados": symbols_json,
                 "fecha": fecha.date().isoformat(),
@@ -184,50 +230,47 @@ def _read_nyu_file(path: Path, schema: dict[str, str | None], tickers: set[str])
 
 def load_nyu_pairs(
     tickers: set[str],
+    sentiments_dir: Path = STOCKTWITS_NYU_SYMBOL_SENTIMENTS,
     messages_dir: Path = STOCKTWITS_NYU_MESSAGES,
+    cache_dir: Path = _NYU_CACHE_DIR,
+    rebuild: bool = False,
 ) -> pd.DataFrame:
     """
-    Carga pares (post, target_ticker) históricos del bucket NYU messages/.
+    Carga pares (post, target_ticker) históricos del bucket NYU.
+
+    El join sobre messages/ (~55 GB) se cachea en
+    data/processed/nyu_pool_<tickers>.parquet; se reutiliza salvo `rebuild`.
 
     Args:
         tickers: Tickers a conservar.
-        messages_dir: Directorio del bucket NYU con los CSV crudos.
+        sentiments_dir: Directorio NYU symbol_sentiments/ (ticker y fecha).
+        messages_dir: Directorio NYU messages/ (texto).
+        cache_dir: Directorio del caché del join.
+        rebuild: Ignora el caché y rehace el join.
 
     Returns:
-        DataFrame con _POOL_COLUMNS. Vacío (con warning) si el directorio no
-        existe — típicamente porque D:\\trading-data\\ no está montado.
+        DataFrame con _POOL_COLUMNS. Vacío (con warning) si no hay caché y el
+        bucket no está disponible — típicamente D:\\trading-data\\ sin montar.
     """
     if not tickers:
         return pd.DataFrame(columns=_POOL_COLUMNS)
-    if not messages_dir.exists():
-        logger.warning(
-            "No existe %s (¿está montado D:\\trading-data\\?). Sin fuente histórica NYU.",
-            messages_dir,
-        )
-        return pd.DataFrame(columns=_POOL_COLUMNS)
 
-    files = sorted(messages_dir.glob("*.csv"))
-    if not files:
-        logger.warning("Sin archivos .csv en %s. Sin fuente histórica NYU.", messages_dir)
-        return pd.DataFrame(columns=_POOL_COLUMNS)
+    cache_path = cache_dir / f"nyu_pool_{'_'.join(sorted(tickers))}.parquet"
+    if cache_path.exists() and not rebuild:
+        raw = pd.read_parquet(cache_path)
+        logger.info("Caché NYU: %d mensajes desde %s", len(raw), cache_path)
+    else:
+        missing = [d for d in (sentiments_dir, messages_dir) if not d.exists()]
+        if missing:
+            logger.warning(
+                "No existe %s (¿está montado D:\\trading-data\\?). Sin fuente histórica NYU.",
+                missing,
+            )
+            return pd.DataFrame(columns=_POOL_COLUMNS)
+        raw = _build_nyu_cache(tickers, sentiments_dir, messages_dir, cache_path)
 
-    schema = detect_nyu_schema(files[0])
-    logger.info("Schema NYU detectado en %s: %s", files[0].name, schema)
-
-    frames: list[pd.DataFrame] = []
-    for path in files:
-        try:
-            frame = _read_nyu_file(path, schema, tickers)
-        except Exception as exc:  # noqa: BLE001 — un archivo corrupto no mata el job
-            logger.error("Archivo NYU %s falló (%s); se omite.", path, exc)
-            continue
-        if not frame.empty:
-            frames.append(frame)
-
-    if not frames:
-        return pd.DataFrame(columns=_POOL_COLUMNS)
-    result = pd.concat(frames, ignore_index=True)
-    logger.info("Fuente NYU: %d pares sobre %d archivo(s).", len(result), len(files))
+    result = _explode_nyu_pairs(raw, tickers)
+    logger.info("Fuente NYU: %d pares.", len(result))
     return result
 
 
@@ -240,9 +283,8 @@ def load_live_pairs(tickers: list[str], max_per_symbol: int = 60) -> pd.DataFram
     Trae pares (post, target_ticker) del stream reciente de StockTwits.
 
     ADVERTENCIA metodológica: el endpoint público solo expone mensajes
-    recientes, no búsqueda histórica. Para los tickers sin cobertura NYU
-    esta fuente concentra todo el muestreo en el año en curso y NO permite
-    estratificar por año.
+    recientes, no búsqueda histórica, así que esta fuente concentra el
+    muestreo en el año en curso y el sample cambia según cuándo se corra.
 
     Args:
         tickers: Tickers a consultar.
@@ -252,9 +294,8 @@ def load_live_pairs(tickers: list[str], max_per_symbol: int = 60) -> pd.DataFram
         DataFrame con _POOL_COLUMNS. Vacío si el scraping falla.
     """
     logger.warning(
-        "Fuente en vivo: stream RECIENTE de StockTwits, no histórico. "
-        "Para %s (sin cobertura NYU) no aporta profundidad por año.",
-        sorted(set(tickers) - NYU_COVERED_TICKERS),
+        "Fuente en vivo: stream RECIENTE de StockTwits, no histórico; "
+        "el sample deja de ser reproducible."
     )
     try:
         from src.sentiment.scraper_stocktwits import scrape
@@ -299,23 +340,26 @@ def load_live_pairs(tickers: list[str], max_per_symbol: int = 60) -> pd.DataFram
 def build_pool(
     tickers: list[str] = TICKERS,
     nyu_tickers: set[str] = NYU_COVERED_TICKERS,
+    include_live: bool = False,
     max_live_per_symbol: int = 60,
+    rebuild_nyu_cache: bool = False,
 ) -> pd.DataFrame:
     """
-    Combina las dos fuentes en un pool deduplicado por (post_id, target_ticker).
+    Arma el pool de pares deduplicado por (post_id, target_ticker).
 
     Args:
         tickers: Universo de tickers del estudio.
         nyu_tickers: Subconjunto con cobertura histórica NYU.
+        include_live: Suma la fuente en vivo (fuera del diseño pre-registrado).
         max_live_per_symbol: Tope de mensajes por símbolo en la fuente en vivo.
+        rebuild_nyu_cache: Rehace el join NYU aunque exista el caché.
 
     Returns:
         DataFrame con _POOL_COLUMNS, sin filas de texto vacío.
     """
-    frames = [
-        load_nyu_pairs(nyu_tickers & set(tickers)),
-        load_live_pairs(tickers, max_live_per_symbol),
-    ]
+    frames = [load_nyu_pairs(nyu_tickers & set(tickers), rebuild=rebuild_nyu_cache)]
+    if include_live:
+        frames.append(load_live_pairs(tickers, max_live_per_symbol))
     frames = [f for f in frames if not f.empty]
     if not frames:
         logger.warning("Pool vacío: ninguna fuente devolvió datos.")
@@ -478,6 +522,11 @@ def partition(sample: pd.DataFrame, batches: dict[str, tuple[int, bool]] = _BATC
     """
     Corta el sample en los lotes l0 / doble / test / train, en ese orden.
 
+    Todos los pares de un mismo post_id van al mismo lote, para que el mismo
+    texto no quede a la vez en train y en test. Cada lote se llena en el
+    orden del sample con los posts que caben; el post que no cabe pasa al
+    lote siguiente, así los tamaños quedan exactos.
+
     Args:
         sample: Salida de sample_stratified() (ya barajada).
         batches: Definición lote → (tamaño, compartido).
@@ -496,11 +545,26 @@ def partition(sample: pd.DataFrame, batches: dict[str, tuple[int, bool]] = _BATC
             "corré con --allow-partial para generar lotes proporcionales más chicos."
         )
 
+    positions = sample.groupby("post_id").indices
+    pending = [positions[post_id] for post_id in pd.unique(sample["post_id"])]
+
     result: dict[str, pd.DataFrame] = {}
-    start = 0
     for name, (size, _) in batches.items():
-        result[name] = sample.iloc[start: start + size].reset_index(drop=True)
-        start += size
+        chosen: list[np.ndarray] = []
+        deferred: list[np.ndarray] = []
+        count = 0
+        for group in pending:
+            if count + len(group) <= size:
+                chosen.append(group)
+                count += len(group)
+            else:
+                deferred.append(group)
+        if count < size:
+            raise ValueError(
+                f"No se pudo completar el lote '{name}' ({count}/{size}) sin partir posts."
+            )
+        result[name] = sample.iloc[np.concatenate(chosen)].reset_index(drop=True)
+        pending = deferred
     return result
 
 
@@ -594,6 +658,7 @@ def write_manifest(
     sample: pd.DataFrame,
     assignments: dict[tuple[str, str], pd.DataFrame],
     written: dict[str, Path],
+    pool: pd.DataFrame | None = None,
     seed: int = SEED,
     output_dir: Path = _MANUAL_LABELS_DIR,
 ) -> Path:
@@ -604,6 +669,7 @@ def write_manifest(
         sample: Pares muestreados.
         assignments: Reparto (lote, anotador) → filas.
         written: Archivos escritos, para hashear.
+        pool: Pool del que se muestreó (para registrar su tamaño por ticker).
         seed: Semilla usada.
         output_dir: Directorio de salida.
 
@@ -620,6 +686,12 @@ def write_manifest(
         "total_pares": int(len(sample)),
         "min_por_ticker": MIN_PER_TICKER,
         "unidad_de_muestreo": "(post_id, target_ticker)",
+        "particion_agrupada_por_post": True,
+        "fuente_nyu": "symbol_sentiments ⋈ messages por message_id (solo mensajes con label nativo)",
+        "pool_por_ticker": (
+            {str(t): int(n) for t, n in pool["target_ticker"].value_counts().sort_index().items()}
+            if pool is not None else None
+        ),
         "lotes": {
             batch: {
                 "pares": int(size),
@@ -638,7 +710,7 @@ def write_manifest(
         "por_ticker_y_anio": por_ticker_y_anio,
         "por_fuente": {str(s): int(n) for s, n in sample["source"].value_counts().items()},
         "archivos": {
-            name: {"filas": int(sum(1 for _ in path.open(encoding="utf-8")) - 1), "sha256": _sha256(path)}
+            name: {"filas": int(len(pd.read_csv(path, dtype=str))), "sha256": _sha256(path)}
             for name, path in sorted(written.items())
         },
     }
@@ -671,7 +743,15 @@ if __name__ == "__main__":
     )
     parser.add_argument("--total", type=int, default=TOTAL_PAIRS, help="Pares a muestrear (default: 1000).")
     parser.add_argument("--min-per-ticker", type=int, default=MIN_PER_TICKER, help="Mínimo por ticker (default: 10).")
+    parser.add_argument(
+        "--include-live", action="store_true",
+        help="Suma el stream reciente de StockTwits al pool (fuera del diseño pre-registrado).",
+    )
     parser.add_argument("--max-live-per-symbol", type=int, default=60, help="Tope de mensajes por símbolo en vivo.")
+    parser.add_argument(
+        "--rebuild-nyu-cache", action="store_true",
+        help="Rehace el join NYU (~55 GB de messages/) aunque exista el caché.",
+    )
     parser.add_argument("--output-dir", type=Path, default=_MANUAL_LABELS_DIR, help="Directorio de salida.")
     parser.add_argument(
         "--allow-partial", action="store_true",
@@ -680,11 +760,16 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    pool = build_pool(max_live_per_symbol=args.max_live_per_symbol)
+    pool = build_pool(
+        include_live=args.include_live,
+        max_live_per_symbol=args.max_live_per_symbol,
+        rebuild_nyu_cache=args.rebuild_nyu_cache,
+    )
     if pool.empty:
         print(
-            "Pool vacío: no se pudo leer NYU (¿D:\\trading-data\\ montado?) ni "
-            "StockTwits en vivo (¿red disponible?). No se generó ningún lote."
+            "Pool vacío: no se pudo leer NYU (¿D:\\trading-data\\ montado?)"
+            + (" ni StockTwits en vivo (¿red disponible?)" if args.include_live else "")
+            + ". No se generó ningún lote."
         )
         sys.exit(1)
 
@@ -709,7 +794,7 @@ if __name__ == "__main__":
     batches = partition(sample, definitions)
     assignments = assign_to_annotators(batches, definitions)
     written = write_batches(assignments, args.output_dir)
-    manifest_path = write_manifest(sample, assignments, written, output_dir=args.output_dir)
+    manifest_path = write_manifest(sample, assignments, written, pool=pool, output_dir=args.output_dir)
 
     print(f"\n{len(written)} archivos escritos en {args.output_dir}")
     for name in sorted(written):
