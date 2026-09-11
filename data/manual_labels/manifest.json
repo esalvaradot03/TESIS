@@ -1,0 +1,155 @@
+{
+  "generado": "2026-09-11T01:53:53.869446+00:00",
+  "seed": 42,
+  "total_pares": 1000,
+  "min_por_ticker": 10,
+  "unidad_de_muestreo": "(post_id, target_ticker)",
+  "particion_agrupada_por_post": true,
+  "fuente_nyu": "symbol_sentiments ⋈ messages por message_id (solo mensajes con label nativo)",
+  "pool_por_ticker": {
+    "CMG": 59340,
+    "CRWD": 35056,
+    "DDOG": 11702,
+    "DIS": 217257,
+    "NCLH": 58321,
+    "TGT": 38367
+  },
+  "lotes": {
+    "l0": {
+      "pares": 100,
+      "compartido": true,
+      "por_anotador": {
+        "camilo": 100,
+        "esteban": 100
+      }
+    },
+    "doble": {
+      "pares": 200,
+      "compartido": true,
+      "por_anotador": {
+        "camilo": 200,
+        "esteban": 200
+      }
+    },
+    "test": {
+      "pares": 300,
+      "compartido": false,
+      "por_anotador": {
+        "camilo": 150,
+        "esteban": 150
+      }
+    },
+    "train": {
+      "pares": 400,
+      "compartido": false,
+      "por_anotador": {
+        "camilo": 200,
+        "esteban": 200
+      }
+    }
+  },
+  "por_ticker": {
+    "CMG": 143,
+    "CRWD": 88,
+    "DDOG": 36,
+    "DIS": 496,
+    "NCLH": 141,
+    "TGT": 96
+  },
+  "por_ticker_y_anio": {
+    "CMG": {
+      "2011": 1,
+      "2012": 2,
+      "2013": 3,
+      "2014": 5,
+      "2015": 12,
+      "2016": 27,
+      "2017": 29,
+      "2018": 14,
+      "2019": 19,
+      "2020": 15,
+      "2021": 9,
+      "2022": 7
+    },
+    "CRWD": {
+      "2019": 22,
+      "2020": 28,
+      "2021": 22,
+      "2022": 16
+    },
+    "DDOG": {
+      "2019": 2,
+      "2020": 18,
+      "2021": 9,
+      "2022": 7
+    },
+    "DIS": {
+      "2013": 1,
+      "2014": 5,
+      "2015": 31,
+      "2016": 24,
+      "2017": 18,
+      "2018": 25,
+      "2019": 106,
+      "2020": 123,
+      "2021": 84,
+      "2022": 79
+    },
+    "NCLH": {
+      "2016": 1,
+      "2018": 1,
+      "2020": 91,
+      "2021": 28,
+      "2022": 20
+    },
+    "TGT": {
+      "2013": 1,
+      "2014": 1,
+      "2015": 2,
+      "2016": 3,
+      "2017": 14,
+      "2018": 6,
+      "2019": 16,
+      "2020": 18,
+      "2021": 15,
+      "2022": 20
+    }
+  },
+  "por_fuente": {
+    "nyu": 1000
+  },
+  "archivos": {
+    "doble_camilo.csv": {
+      "filas": 200,
+      "sha256": "83ca33a3abcc9db9cbf017a4316d5f9e3e55b9a45743a03a8847cdc0012fdc40"
+    },
+    "doble_esteban.csv": {
+      "filas": 200,
+      "sha256": "933738d7ae161db4b303fe30f3a72b84a9510da691b2125ba4827bdf5f7c791d"
+    },
+    "l0_camilo.csv": {
+      "filas": 100,
+      "sha256": "2e6fd1520b83394acb5a28fd212642ad2e9cc3dd7772a2d5927c4893b5cf342c"
+    },
+    "l0_esteban.csv": {
+      "filas": 100,
+      "sha256": "c523de4e10ea6287e8cab97c01bbeff4f298675cc43896b50c183776e2f7e7eb"
+    },
+    "test_camilo.csv": {
+      "filas": 150,
+      "sha256": "4c93ab71a779344980ce6303d2e428678154d8d3b3252aef561d0118750616c0"
+    },
+    "test_esteban.csv": {
+      "filas": 150,
+      "sha256": "1f2c1631aab89e868ff3e561088e6fd0b9966e71c03b983890850727e32d03ec"
+    },
+    "train_camilo.csv": {
+      "filas": 200,
+      "sha256": "d8c036275afc1179b22e051059f0ad85c2336b4f795aab94816f8f3e77898d70"
+    },
+    "train_esteban.csv": {
+      "filas": 200,
+      "sha256": "07486879343a7903e486e6ec0132fd4269e7cb78b6523332168805f8e385f63a"
+    }
+  }
+}
