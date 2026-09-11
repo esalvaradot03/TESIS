@@ -51,6 +51,8 @@ data/raw/external/
 # ya ignorados; estas reglas atrapan CSV sueltos fuera de esas carpetas).
 data/**/*.csv
 !data/sp500_tickers.csv
+# Lotes de etiquetado manual del corpus del event study (pequeños, versionados)
+!data/manual_labels/*.csv
 *.tsv
 *.csv.gz
 *.parquet.gz

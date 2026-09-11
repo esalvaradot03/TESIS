@@ -427,8 +427,8 @@ research/event_study/
 ├── car_analysis.py           ⏳ pendiente (bloqueado por el pre-registro, regla 1)
 └── results_event_study.md    ⏳ pendiente
 
-data/manual_labels/           CSVs de etiquetado (gitignored, van por Drive);
-                                  solo manifest.json se commitea
+data/manual_labels/           CSVs de etiquetado + manifest.json, versionados
+                                  en git (excepción en .gitignore)
 docs/codebook_etiquetado.md   ⏳ referenciado en conversaciones previas pero no
                                   existe en el repo — falta escribirlo/commitearlo
 docs/pre_registro_event_study.md  ⏳ pendiente
