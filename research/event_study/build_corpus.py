@@ -20,10 +20,11 @@ Fuentes:
     corra. Fuera del diseño pre-registrado.
 
 Diseño de muestreo (pre-registrado, SEED=42):
-  1000 pares, estratificados por (ticker, año), mínimo 10 por ticker,
-  partidos en 4 lotes:
-    l0     100 pares — calibración, AMBOS anotadores etiquetan los mismos
-    doble  200 pares — kappa primario, AMBOS etiquetan los mismos
+  1000 pares, estratificados por (ticker, año), partidos en 4 lotes disjuntos:
+    l0     100 pares — calibración, AMBOS anotadores etiquetan los mismos;
+                       mínimo 10 por ticker
+    doble  200 pares — kappa primario, AMBOS etiquetan los mismos;
+                       mínimo 10 por ticker
     test   300 pares — 150/150, sin solapamiento
     train  400 pares — 200/200, sin solapamiento
   Todos los pares de un mismo post caen en el mismo lote (sin fuga de texto
@@ -70,6 +71,10 @@ _BATCHES: dict[str, tuple[int, bool]] = {
     "test": (300, False),
     "train": (400, False),
 }
+
+# Mínimo de pares por ticker dentro de cada lote. Los lotes sin entrada no
+# tienen mínimo: test y train se llenan al azar (no por fecha).
+_BATCH_MIN_PER_TICKER: dict[str, int] = {"l0": 10, "doble": 10}
 
 _MANUAL_LABELS_DIR = DATA_DIR / "manual_labels"
 
@@ -518,24 +523,33 @@ def sample_stratified(
 # Partición en lotes y reparto entre anotadores
 # ---------------------------------------------------------------------------
 
-def partition(sample: pd.DataFrame, batches: dict[str, tuple[int, bool]] = _BATCHES) -> dict[str, pd.DataFrame]:
+def partition(
+    sample: pd.DataFrame,
+    batches: dict[str, tuple[int, bool]] = _BATCHES,
+    batch_mins: dict[str, int] = _BATCH_MIN_PER_TICKER,
+    tickers: list[str] = TICKERS,
+) -> dict[str, pd.DataFrame]:
     """
     Corta el sample en los lotes l0 / doble / test / train, en ese orden.
 
     Todos los pares de un mismo post_id van al mismo lote, para que el mismo
-    texto no quede a la vez en train y en test. Cada lote se llena en el
-    orden del sample con los posts que caben; el post que no cabe pasa al
-    lote siguiente, así los tamaños quedan exactos.
+    texto no quede a la vez en train y en test. Para cada lote, primero se
+    cubre su mínimo por ticker (`batch_mins`) con los primeros posts del
+    sample que lo satisfacen, y después se completa en el orden aleatorio
+    del sample con los posts que caben; el post que no cabe pasa al lote
+    siguiente, así los tamaños quedan exactos.
 
     Args:
         sample: Salida de sample_stratified() (ya barajada).
         batches: Definición lote → (tamaño, compartido).
+        batch_mins: Mínimo de pares por ticker dentro de cada lote.
+        tickers: Tickers sobre los que aplica el mínimo.
 
     Returns:
         Dict lote → DataFrame.
 
     Raises:
-        ValueError: si el sample no alcanza para cubrir todos los lotes.
+        ValueError: si el sample no alcanza para cubrir los lotes o sus mínimos.
     """
     needed = sum(size for size, _ in batches.values())
     if len(sample) < needed:
@@ -547,24 +561,45 @@ def partition(sample: pd.DataFrame, batches: dict[str, tuple[int, bool]] = _BATC
 
     positions = sample.groupby("post_id").indices
     pending = [positions[post_id] for post_id in pd.unique(sample["post_id"])]
+    ticker_of = sample["target_ticker"].to_numpy()
 
     result: dict[str, pd.DataFrame] = {}
     for name, (size, _) in batches.items():
-        chosen: list[np.ndarray] = []
-        deferred: list[np.ndarray] = []
+        taken = [False] * len(pending)
         count = 0
-        for group in pending:
-            if count + len(group) <= size:
-                chosen.append(group)
+
+        # 1) mínimo por ticker del lote
+        minimum = batch_mins.get(name, 0)
+        for ticker in tickers if minimum else []:
+            have = sum(int((ticker_of[g] == ticker).sum()) for g, t in zip(pending, taken) if t)
+            for i, group in enumerate(pending):
+                if have >= minimum:
+                    break
+                if taken[i] or count + len(group) > size or not (ticker_of[group] == ticker).any():
+                    continue
+                taken[i] = True
                 count += len(group)
-            else:
-                deferred.append(group)
+                have += int((ticker_of[group] == ticker).sum())
+            if have < minimum:
+                raise ValueError(
+                    f"Lote '{name}': solo {have} pares de {ticker} disponibles (mínimo {minimum})."
+                )
+
+        # 2) el resto, en el orden aleatorio del sample
+        for i, group in enumerate(pending):
+            if count >= size:
+                break
+            if not taken[i] and count + len(group) <= size:
+                taken[i] = True
+                count += len(group)
         if count < size:
             raise ValueError(
                 f"No se pudo completar el lote '{name}' ({count}/{size}) sin partir posts."
             )
+
+        chosen = [g for g, t in zip(pending, taken) if t]
         result[name] = sample.iloc[np.concatenate(chosen)].reset_index(drop=True)
-        pending = deferred
+        pending = [g for g, t in zip(pending, taken) if not t]
     return result
 
 
@@ -654,6 +689,12 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _pool_sha256(pool: pd.DataFrame) -> str:
+    """SHA-256 del pool, independiente del orden de filas (ordenado por la llave del par)."""
+    canon = pool[["post_id", "target_ticker", "fecha", "clean_text"]].sort_values(["post_id", "target_ticker"])
+    return hashlib.sha256(canon.to_csv(index=False).encode("utf-8")).hexdigest()
+
+
 def write_manifest(
     sample: pd.DataFrame,
     assignments: dict[tuple[str, str], pd.DataFrame],
@@ -680,11 +721,27 @@ def write_manifest(
     for (ticker, year), count in sample.groupby(["target_ticker", "year"]).size().items():
         por_ticker_y_anio.setdefault(str(ticker), {})[str(year)] = int(count)
 
+    ids_por_lote: dict[str, dict[str, list[list[str]]]] = {}
+    por_lote_y_ticker: dict[str, dict[str, int]] = {}
+    for batch in _BATCHES:
+        frames = {a: assignments[(batch, a)] for a in ANNOTATORS if (batch, a) in assignments}
+        ids_por_lote[batch] = {
+            a: sorted([str(p), str(t)] for p, t in zip(f["post_id"], f["target_ticker"]))
+            for a, f in frames.items()
+        }
+        union = pd.concat(frames.values()).drop_duplicates(["post_id", "target_ticker"])
+        por_lote_y_ticker[batch] = {
+            str(t): int(n) for t, n in union["target_ticker"].value_counts().sort_index().items()
+        }
+
     manifest = {
         "generado": datetime.now(timezone.utc).isoformat(),
         "seed": seed,
         "total_pares": int(len(sample)),
-        "min_por_ticker": MIN_PER_TICKER,
+        "min_por_ticker_sample": max(MIN_PER_TICKER, sum(_BATCH_MIN_PER_TICKER.values())),
+        "min_por_ticker_por_lote": _BATCH_MIN_PER_TICKER,
+        "reparto_test_train": "aleatorio (SEED), no por fecha",
+        "pool_sha256": _pool_sha256(pool) if pool is not None else None,
         "unidad_de_muestreo": "(post_id, target_ticker)",
         "particion_agrupada_por_post": True,
         "fuente_nyu": "symbol_sentiments ⋈ messages por message_id (solo mensajes con label nativo)",
@@ -709,6 +766,8 @@ def write_manifest(
         },
         "por_ticker_y_anio": por_ticker_y_anio,
         "por_fuente": {str(s): int(n) for s, n in sample["source"].value_counts().items()},
+        "por_lote_y_ticker": por_lote_y_ticker,
+        "ids_por_lote": ids_por_lote,
         "archivos": {
             name: {"filas": int(len(pd.read_csv(path, dtype=str))), "sha256": _sha256(path)}
             for name, path in sorted(written.items())
@@ -773,7 +832,9 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    sample = sample_stratified(pool, total=args.total, min_per_ticker=args.min_per_ticker)
+    # El sample necesita al menos la suma de los mínimos por lote de cada ticker.
+    sample_min = max(args.min_per_ticker, sum(_BATCH_MIN_PER_TICKER.values()))
+    sample = sample_stratified(pool, total=args.total, min_per_ticker=sample_min)
 
     definitions = _BATCHES
     if len(sample) < args.total:
