@@ -2,6 +2,10 @@
 .env
 .kaggle/
 
+# Google Drive (OAuth) — NUNCA commitear
+credentials.json
+token.json
+
 # Entorno virtual
 .venv/
 venv/

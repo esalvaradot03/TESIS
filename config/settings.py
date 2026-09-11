@@ -20,7 +20,22 @@ MODELS_DIR = ROOT_DIR / "models"
 # --- Datos externos (FUERA del repo, en disco aparte D:\trading-data) ---
 # Pesan decenas/cientos de GB; los descarga src/data/setup_external_data.py.
 # La raíz es configurable con TESIS_DATA_ROOT por si el disco cambia de letra.
-EXTERNAL_DATA_ROOT: Path = Path(os.getenv("TESIS_DATA_ROOT", "D:/trading-data"))
+#
+# En un servidor en la nube (sin disco D:), apuntar TESIS_DATA_ROOT a la carpeta
+# donde `src/data/drive_sync.py` descarga los datos desde Google Drive. Ejemplos:
+#   Linux/servidor:  export TESIS_DATA_ROOT=/home/usuario/trading-data
+#   Windows local:   set TESIS_DATA_ROOT=D:/trading-data
+# El default se resuelve así: si existe D:/trading-data (Windows) se usa; si no,
+# se cae a ./trading-data relativo al repo (funciona en Linux/servidor).
+def _default_data_root() -> Path:
+    win_disk = Path("D:/trading-data")
+    if win_disk.exists():
+        return win_disk
+    # Fallback portable (servidor Linux, contenedores, etc.)
+    return ROOT_DIR / "trading-data"
+
+
+EXTERNAL_DATA_ROOT: Path = Path(os.getenv("TESIS_DATA_ROOT", str(_default_data_root())))
 
 # Sub-rutas derivadas (no se crean aquí; las crea el script de setup)
 STOCKTWITS_NYU_SYMBOL_SENTIMENTS: Path = EXTERNAL_DATA_ROOT / "stocktwits_nyu" / "symbol_sentiments"
