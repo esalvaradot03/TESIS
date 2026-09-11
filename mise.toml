@@ -1,0 +1,8 @@
+# Configuración de mise para el build en Railway (Railpack).
+#
+# Railway instala Python vía mise. La verificación de "GitHub artifact
+# attestations" de mise falla para python@3.12.7 ("No GitHub artifact
+# attestations found"), abortando el build. Se desactiva esa verificación:
+# los binarios de Python provienen igualmente de la fuente estándar de mise.
+[settings]
+python.github_attestations = false
