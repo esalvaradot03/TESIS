@@ -378,10 +378,24 @@ sep-2026; mensajes con label nativo 2010–2022: DIS 217k, CMG 59k, NCLH 58k,
 TGT 38k, CRWD 35k, DDOG 12k). Límites: CRWD y DDOG solo desde su IPO (2019);
 NCLH tiene <300 mensajes/año antes de 2020. El bucket viene partido:
 `symbol_sentiments/` (message_id, created_at, symbol_list) y `messages/`
-(solo message_id, message_body) — ticker y fecha salen del primero y se unen
-al texto por message_id. Como `symbol_sentiments/` solo trae mensajes con
-label Bullish/Bearish, el pool está sesgado hacia sentimiento autodeclarado
-(documentar en el codebook). El stream en vivo queda fuera del muestreo.
+(solo message_id, message_body). `symbol_sentiments/` solo trae mensajes con
+label Bullish/Bearish; usarlo solo excluiría la clase neutral por el filtro de
+origen (comparación de enfoques circular). Por eso el pool combina:
+- **etiquetados**: ticker y fecha reales de `symbol_sentiments/`, texto unido
+  por message_id;
+- **sin etiqueta**: ticker por cashtag en el texto (regla validada contra
+  `symbol_list`: precisión y recall 100%) y fecha interpolada desde el
+  message_id con las anclas de `symbol_sentiments/`. Validación (holdout
+  aleatorio 20%, SEED=42, 21,2M mensajes): 99,997% en el día correcto, error
+  máximo 1 día; 100% en 2019–2022. `created_at` solo tiene resolución de día.
+  Ids fuera del rango de anclas (post 2022-12) se descartan.
+El stream en vivo queda fuera del muestreo. Reparto: cuotas iguales por
+ticker (~167/1000); un ticker corto se reporta, no se rellena.
+
+**Eventos en rango** (los datos terminan 2022-12-31): earnings 2019–2022 de
+los seis, regreso de Iger (nov-2022), earnings TGT nov-2022. Los catalizadores
+2024–25 (apagón CRWD, split CMG, Peltz, DDOG al S&P) quedan fuera; el
+pre-registro fija los eventos a lo que existe.
 
 ### Protocolo de pre-registro (no negociable)
 1. Toda hipótesis nueva se compromete por escrito en
@@ -395,11 +409,12 @@ label Bullish/Bearish, el pool está sesgado hacia sentimiento autodeclarado
 ### Estado de la implementación del pivote
 ```
 research/event_study/
-├── build_corpus.py           ✓ pool NYU (join symbol_sentiments ⋈ messages,
-│                                caché en data/processed/), 1000 pares
-│                                estratificados por (ticker, año), lotes
-│                                l0/doble/test/train agrupados por post_id
-│                                + manifest.json
+├── build_corpus.py           ✓ pool NYU etiquetados + sin etiqueta (fecha
+│                                interpolada), caché nyu_pool_v2 en
+│                                data/processed/; 1000 pares con cuotas
+│                                iguales por ticker, estratificados por año;
+│                                lotes l0/doble (mín. 10/ticker)/test/train
+│                                agrupados por post_id + manifest.json
 ├── kappa_calculator.py       ✓ Cohen's kappa entre dos CSVs de etiquetado
 ├── event_windows.py          ✓ earnings + upgrades/downgrades vía yfinance
 ├── linear_probe.py           ⏳ pendiente — OJO: build_corpus.py etiqueta por
