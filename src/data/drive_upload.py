@@ -50,9 +50,14 @@ ROOT_DIR = Path(__file__).resolve().parents[3]
 CREDENTIALS_FILE = Path(os.getenv("GOOGLE_CREDENTIALS_FILE", ROOT_DIR / "credentials.json"))
 TOKEN_FILE = Path(os.getenv("GOOGLE_TOKEN_FILE", ROOT_DIR / "token.json"))
 EXTERNAL_DATA_ROOT = Path(os.getenv("TESIS_DATA_ROOT", "D:/trading-data"))
-DRIVE_FOLDER_NAME = os.getenv("DRIVE_FOLDER_NAME", "tesis-trading")
+# Carpeta raíz en Drive. Default "TESIS" (Mi unidad/TESIS/...), igual que drive_sync.
+DRIVE_FOLDER_NAME = os.getenv("DRIVE_FOLDER_NAME", "TESIS")
+# Subcarpeta de datos externos dentro de la raíz en Drive (tu D:/trading-data).
+DRIVE_EXTERNAL_SUBDIR = os.getenv("DRIVE_EXTERNAL_SUBDIR", "trading-data")
 
-SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+# Scope: "drive" (completo) permite subir Y ver lo subido manualmente, para que
+# el ciclo bajar→subir sea coherente con drive_sync (que lee con drive.readonly).
+SCOPES = [os.getenv("GOOGLE_DRIVE_UPLOAD_SCOPE", "https://www.googleapis.com/auth/drive")]
 
 # Extensiones de archivos grandes que siempre se suben (no se filtran)
 INCLUDE_EXTENSIONS = {
@@ -277,7 +282,7 @@ def _build_targets(args_only: str | None) -> list[tuple[Path, str]]:
         "raw":      (ROOT_DIR / "data" / "raw",       "data/raw"),
         "processed":(ROOT_DIR / "data" / "processed", "data/processed"),
         "models":   (ROOT_DIR / "models",             "models"),
-        "external": (EXTERNAL_DATA_ROOT,              "datos-externos"),
+        "external": (EXTERNAL_DATA_ROOT,              DRIVE_EXTERNAL_SUBDIR),
     }
     if args_only:
         if args_only not in all_targets:
