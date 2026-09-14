@@ -28,6 +28,7 @@ Uso:
 
 import json
 import logging
+import math
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,6 +60,32 @@ REFERENCIAS: list[dict] = [
 ENFOQUES: tuple[str, ...] = ("finbert", "probe", "vader")
 UMBRAL_SENTIMIENTO = 0.02   # por debajo de esto no se declara dirección
 UMBRAL_RETORNO = 0.0005
+
+
+def _limpiar(valor):
+    """
+    Reemplaza NaN e infinitos por None, recursivamente.
+
+    Es imprescindible: `json.dumps` los escribe como `NaN`/`Infinity`, que son
+    válidos para Python pero **no** para JSON. El navegador aborta el
+    `JSON.parse` en el primero que encuentra y el tablero queda en blanco.
+    Las tablas de resultados vienen llenas de huecos (las filas de correlación
+    no tienen las columnas de placebo y viceversa), así que esto no es un caso
+    raro sino el habitual.
+
+    Args:
+        valor: Estructura anidada de dicts, listas y escalares.
+
+    Returns:
+        La misma estructura con los no-finitos convertidos a None.
+    """
+    if isinstance(valor, float):
+        return valor if math.isfinite(valor) else None
+    if isinstance(valor, dict):
+        return {k: _limpiar(v) for k, v in valor.items()}
+    if isinstance(valor, list):
+        return [_limpiar(v) for v in valor]
+    return valor
 
 
 def _leer(nombre: str) -> pd.DataFrame:
@@ -158,7 +185,7 @@ def bloque_modelos() -> dict:
                      "acuerdo_exacto": float(fila.group(3)) / 100}
     return {
         "comparacion": _leer("comparacion_enfoques").to_dict("records"),
-        "correlaciones": _leer("car_resultados").where(pd.notna(_leer("car_resultados")), None).to_dict("records"),
+        "correlaciones": _leer("car_resultados").to_dict("records"),
         "h2": _leer("bootstrap_h2").to_dict("records"),
         "curva_aprendizaje": _leer("curva_aprendizaje").to_dict("records"),
         "kappa_doble": kappa,
@@ -193,8 +220,14 @@ def construir(salida: Path = _SALIDA) -> dict:
         "modelos": bloque_modelos(),
     }
 
+    paquete = _limpiar(paquete)
     salida.parent.mkdir(parents=True, exist_ok=True)
-    salida.write_text(json.dumps(paquete, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    # allow_nan=False hace que falle acá si algo se escapó, en vez de escribir
+    # un JSON que el navegador rechaza en silencio.
+    salida.write_text(
+        json.dumps(paquete, ensure_ascii=False, separators=(",", ":"), allow_nan=False),
+        encoding="utf-8",
+    )
     logger.info("Paquete escrito en %s (%.1f KB).", salida, salida.stat().st_size / 1024)
     return paquete
 
@@ -227,7 +260,9 @@ def escribir_html(paquete: dict, plantilla: Path = _PLANTILLA, salida: Path = _H
         raise ValueError(f"La plantilla {plantilla} no tiene el marcador /*__DATOS__*/")
 
     # Escapar '<' evita que un texto con '</script>' corte el bloque de datos.
-    datos = json.dumps(paquete, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+    datos = json.dumps(
+        _limpiar(paquete), ensure_ascii=False, separators=(",", ":"), allow_nan=False,
+    ).replace("<", "\\u003c")
     salida.write_text(html.replace("/*__DATOS__*/", datos), encoding="utf-8")
     logger.info("HTML escrito en %s (%.1f KB).", salida, salida.stat().st_size / 1024)
     return salida
