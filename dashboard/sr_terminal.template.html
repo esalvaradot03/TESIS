@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Sentimiento y retorno en los 6 tickers del event study. Datos reales del repositorio: corpus NYU 2020-2022, 55 eventos, tres enfoques de sentimiento.">
+<title>SR Terminal | Sentimiento y retorno</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000000'/%3E%3Cpath d='M6 23V9h7v14m5-14v14h8V9' fill='none' stroke='%23ff9d00' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{--paper:#000;--surface:#090909;--ink:#e6e6e6;--muted:#929292;--rule:#303030;--green:#38e065;--rust:#ff514a;--orange:#ff9d00;--yellow:#ffe14a;--cyan:#68bcff;--mono:'JetBrains Mono',Consolas,'Courier New',monospace;--sans:'IBM Plex Sans','Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--ink);font:12px/1.45 var(--sans)}
+button,select{font:inherit;color:inherit;background:none;border:0;cursor:pointer;min-height:27px}
+a{color:var(--cyan)}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+svg{display:block}
+.wrap{max-width:1680px;margin:0 auto;padding:0 12px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font:10px/1.35 var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.muted{color:var(--muted)}.positive{color:var(--green)}.negative{color:var(--rust)}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px solid #414141}
+.brand{display:flex;align-items:center;gap:10px;font:600 16px var(--sans);color:var(--orange)}
+.brand-mark{color:#000;background:var(--orange);padding:2px 5px;font:700 13px var(--sans)}
+.real{border:1px solid #2c5f33;color:var(--green);font:9px var(--mono);padding:3px 6px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:8px 0}
+.hero h1{font:600 18px var(--sans);color:#fff}
+.hero-facts{display:flex;gap:16px;font:10px var(--mono);color:var(--muted);flex-wrap:wrap}
+.hero-facts b{color:var(--yellow);font-weight:400}
+.nav-shell{position:sticky;top:0;z-index:30;background:#111;border-top:1px solid #555;border-bottom:1px solid #555}
+.nav{display:flex;gap:0;overflow-x:auto}
+.nav a{white-space:nowrap;font-size:11px;text-decoration:none;padding:7px 13px;border-right:1px solid #424242;color:var(--orange)}
+.nav a span{font:10px var(--mono);margin-right:7px}
+main.wrap{display:flex;flex-direction:column;gap:10px;padding-top:10px}
+.section{border:1px solid #494949;padding:0 10px 12px;scroll-margin-top:44px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 -10px 10px;padding:6px 9px;background:#202020;border-bottom:1px solid #484848;flex-wrap:wrap}
+.title-row{display:flex;align-items:center;gap:8px}
+.section-number{font:10px var(--mono);background:#444;color:#fff;padding:1px 4px}
+h2{font:600 13px var(--sans);text-transform:uppercase;color:var(--orange)}
+.section-desc{font-size:10px;color:#aaa;margin-top:3px;padding-left:25px}
+.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.label{font:10px var(--mono);text-transform:uppercase;color:var(--orange)}
+.segments{display:inline-flex;border:1px solid #545454;flex-wrap:wrap}
+.segments button{padding:4px 10px;font-size:10px;border-right:1px solid #454545;color:var(--orange);background:#181818}
+.segments button:last-child{border-right:0}
+.segments button[aria-pressed=true]{background:var(--orange);color:#000}
+select{border:1px solid #727272;background:#182e48;color:var(--yellow);padding:3px 8px;font:11px var(--mono)}
+.universe{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:#303030;border:1px solid #303030}
+.u-card{background:#000;padding:10px 11px;display:flex;flex-direction:column;gap:5px;text-align:left;min-height:96px}
+.u-card[aria-pressed=true]{background:#13233a}
+.u-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.u-sym{font:600 15px var(--mono);color:var(--yellow)}
+.u-liq{font:9px var(--mono);color:var(--cyan);text-transform:uppercase}
+.u-name{font-size:11px;color:#c9c9c9}
+.u-bar{height:6px;background:#1c1c1c;overflow:hidden}
+.u-bar i{display:block;height:100%}
+.u-meta{display:flex;justify-content:space-between;font:10px var(--mono);color:var(--muted)}
+.statline{display:flex;gap:30px;flex-wrap:wrap;padding:10px 0}
+.stat .value{font:18px var(--mono);color:var(--yellow)}
+.stat .name{font-size:10px;color:var(--orange)}
+.cal-scroll{overflow-x:auto;padding:3px 0 6px}
+.calendar{min-width:760px}
+.cal-months{display:grid;grid-template-columns:26px repeat(53,1fr);gap:3px;margin-bottom:5px;font:10px var(--mono);color:var(--orange)}
+.cal-body{display:flex;gap:3px}
+.weekdays{width:25px;display:grid;grid-template-rows:repeat(7,1fr);font:9px var(--mono);color:#aaa}
+.cal-grid{display:grid;grid-template-rows:repeat(7,1fr);grid-template-columns:repeat(53,1fr);grid-auto-flow:column;gap:3px;flex:1}
+.day{padding:0;aspect-ratio:1;position:relative;background:#202020;border:1px solid transparent;min-height:0}
+.day:hover{outline:1px solid var(--yellow);z-index:2}
+.day[aria-pressed=true]{outline:2px solid var(--yellow);z-index:2}
+.day.blank{background:transparent}
+.event-mark{position:absolute;inset:auto 1px 1px auto;font:8px/1 var(--mono);color:#fff}
+.legend{display:flex;gap:12px;align-items:center;font-size:10px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px}
+.swatch{width:9px;height:9px;display:inline-block;border:1px solid #686868}
+.day-panel{display:grid;grid-template-columns:290px 1fr;border:1px solid #363636;background:#070707;margin-top:9px}
+.day-summary{padding:10px;border-right:1px solid #363636}
+.day-summary h3{font:600 17px var(--sans);color:var(--yellow);margin:5px 0}
+.state-tag{font:9px var(--mono);text-transform:uppercase;padding:3px 5px;border:1px solid #444;display:inline-block}
+.day-metrics{display:flex;justify-content:space-between;gap:8px;padding:10px 0}
+.day-metric dt{font-size:10px;color:var(--orange)}
+.day-metric dd{margin:0;font:13px var(--mono)}
+.approach-rows{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.a-row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;border-top:1px solid var(--rule);padding-top:8px}
+.a-row:first-child{border-top:0}
+.a-name{font:11px var(--mono);color:var(--yellow)}
+.a-track{height:14px;background:#161616;position:relative}
+.a-track i{position:absolute;top:0;bottom:0}
+.a-track .zero{left:50%;width:1px;background:#555}
+.chart-wrap{position:relative;padding-left:44px;padding-top:10px}
+.chart-svg{width:100%;height:230px;overflow:visible}
+.chart-labels{position:absolute;left:0;top:10px;height:230px;width:38px}
+.chart-labels span{position:absolute;right:3px;font:9px var(--mono);color:var(--orange);transform:translateY(-50%)}
+.x-labels{display:flex;justify-content:space-between;font:9px var(--mono);color:var(--orange);margin-top:8px}
+.series-controls{display:flex;flex-wrap:wrap;gap:4px 13px;margin-bottom:8px}
+.series-controls button{display:flex;align-items:center;gap:5px;font:10px var(--mono);color:var(--yellow)}
+.series-controls button[aria-pressed=false]{opacity:.45;text-decoration:line-through}
+.line-key{width:18px;height:7px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:14px}
+.data-table{width:100%;border-collapse:collapse;font-size:11px}
+.data-table th{font:10px var(--sans);color:var(--orange);text-transform:uppercase;font-weight:500;padding:5px 8px;border-bottom:1px solid #555;text-align:right;background:#171717;white-space:nowrap}
+.data-table td{padding:5px 8px;border-bottom:1px solid #272727;text-align:right;font:11px var(--mono);color:var(--yellow);white-space:nowrap}
+.data-table td:first-child,.data-table th:first-child{text-align:left}
+.data-table tbody tr:nth-child(even){background:#0d0d0d}
+.data-table caption{caption-side:bottom;text-align:left;margin-top:6px;font-size:9px;color:#969696}
+.note{font-size:10px;color:#969696;margin-top:9px}
+.warn{border-left:3px solid var(--orange);padding:7px 10px;background:#140f04;font-size:10px;color:#d8cdb6;margin-top:9px}
+.empty{height:200px;display:grid;place-items:center;color:var(--orange);font-size:12px;border:1px dashed #444;text-align:center;padding:16px}
+.tooltip{position:fixed;z-index:60;background:#151515;border:1px solid var(--orange);padding:9px 11px;font-size:11px;max-width:280px;pointer-events:none}
+.tooltip b{display:block;color:var(--orange);margin-bottom:6px}
+.tooltip dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+.tooltip dt{color:#aaa}.tooltip dd{margin:0;text-align:right;font:10px var(--mono);color:var(--yellow)}
+.methodology{display:grid;grid-template-columns:230px 1fr;gap:20px;padding:10px;border:1px solid #393939}
+.methodology h3{font:600 12px var(--sans);color:var(--orange);text-transform:uppercase}
+.methodology details{border-bottom:1px solid #292929;padding:6px 0}
+.methodology summary{font-size:11px;cursor:pointer;color:var(--cyan)}
+.methodology p{font-size:11px;color:#aaa;margin:9px 0;line-height:1.6}
+.footer{display:flex;justify-content:space-between;gap:14px;padding:6px 0 12px;font-size:9px;color:#888;flex-wrap:wrap}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}.day-panel{grid-template-columns:1fr}.methodology{grid-template-columns:1fr}}
+@media print{.nav-shell{display:none}.section{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand"><span class="brand-mark">SR</span><span>TESIS TERMINAL</span></div>
+    <div style="display:flex;gap:14px;align-items:center">
+      <span class="eyebrow muted" id="meta-rango"></span>
+      <span class="real">DATOS REALES DEL REPOSITORIO</span>
+    </div>
+  </header>
+  <div class="hero">
+    <div>
+      <p class="eyebrow muted">SR / EQUITY / SENTIMENT</p>
+      <h1>Sentimiento y retorno</h1>
+    </div>
+    <div class="hero-facts" id="hero-facts"></div>
+  </div>
+</div>
+<div class="nav-shell"><nav class="nav wrap" aria-label="Secciones">
+  <a href="#universo"><span>01</span>Universo</a>
+  <a href="#calendario"><span>02</span>Concurrencia</a>
+  <a href="#rendimiento"><span>03</span>Rendimiento</a>
+  <a href="#eventos"><span>04</span>Eventos / CAR</a>
+  <a href="#modelos"><span>05</span>Modelos</a>
+</nav></div>
+
+<main class="wrap">
+  <section class="section" id="universo">
+    <div class="section-head">
+      <div><div class="title-row"><span class="section-number">01</span><h2>Universo del estudio</h2></div>
+      <p class="section-desc">Seis tickers Â· barra proporcional al volumen real de mensajes Â· retorno del dÃ­a seleccionado</p></div>
+      <div class="tools"><span class="label">Liquidez</span>
+        <select id="liquidez"><option value="todos">Todas</option><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select>
+      </div>
+    </div>
+    <div class="universe" id="universe"></div>
+    <p class="note" id="universe-note"></p>
+  </section>
+
+  <section class="section" id="calendario">
+    <div class="section-head">
+      <div><div class="title-row"><span class="section-number">02</span><h2>Calendario sentimiento / retorno</h2></div>
+      <p class="section-desc">Signo del sentimiento del dÃ­a contra el signo del retorno del mismo dÃ­a</p></div>
+      <div class="tools">
+        <span class="label">Ticker</span><div class="segments" id="ticker-controls"></div>
+        <span class="label">Enfoque</span><div class="segments" id="approach-controls"></div>
+        <span class="label">AÃ±o</span><div class="segments" id="year-controls"></div>
+      </div>
+    </div>
+    <div class="statline" id="calendar-stats"></div>
+    <div class="cal-scroll"><div class="calendar">
+      <div class="cal-months" id="calendar-months"></div>
+      <div class="cal-body">
+        <div class="weekdays" aria-hidden="true"><span>D</span><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span></div>
+        <div class="cal-grid" id="calendar-grid" role="group" aria-label="Calendario anual"></div>
+      </div>
+    </div></div>
+    <div class="legend" style="margin-top:8px">
+      <span class="legend-item"><i class="swatch" style="background:#1d7a3d"></i>Misma direcciÃ³n</span>
+      <span class="legend-item"><i class="swatch" style="background:#a12522"></i>Divergencia</span>
+      <span class="legend-item"><i class="swatch" style="background:#202020"></i>Sin evaluaciÃ³n</span>
+      <span class="legend-item"><i class="swatch" style="border-color:#e8c04d;background:#000"></i>E: dÃ­a de evento</span>
+    </div>
+    <div class="day-panel" id="day-panel"></div>
+  </section>
+
+  <section class="section" id="rendimiento">
+    <div class="section-head">
+      <div><div class="title-row"><span class="section-number">03</span><h2>Rendimiento comparado</h2></div>
+      <p class="section-desc">Base 100 Â· precios ajustados reales Â· 6 tickers contra S&amp;P 500 y ETF regionales</p></div>
+      <div class="tools"><span class="label">PerÃ­odo</span><div class="segments" id="range-controls"></div></div>
+    </div>
+    <div class="grid2">
+      <div>
+        <div class="series-controls" id="series-controls"></div>
+        <div id="performance-chart"></div>
+        <p class="note" id="perf-note"></p>
+      </div>
+      <div>
+        <table class="data-table">
+          <thead><tr><th>Activo</th><th>Retorno</th><th>Vol. anual</th><th>CaÃ­da mÃ¡x.</th></tr></thead>
+          <tbody id="performance-table"></tbody>
+          <caption>SPY: S&amp;P 500 Â· VGK: Europa Â· EWJ: JapÃ³n Â· AAXJ: Asia ex-JapÃ³n.</caption>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="eventos">
+    <div class="section-head">
+      <div><div class="title-row"><span class="section-number">04</span><h2>Estudio de eventos / CAR</h2></div>
+      <p class="section-desc">Retorno anormal acumulado Â· modelo de mercado CAPM contra SPY</p></div>
+      <div class="tools">
+        <span class="label">Ventana</span><div class="segments" id="window-controls"></div>
+        <span class="label">Modelo</span><div class="segments" id="alpha-controls"></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <div id="car-chart"></div>
+        <div class="warn" id="alpha-warn"></div>
+      </div>
+      <div>
+        <table class="data-table">
+          <thead><tr><th>Ticker</th><th>Eventos</th><th>CAR final</th></tr></thead>
+          <tbody id="car-table"></tbody>
+          <caption>CAR medio de los eventos de cada ticker al cierre de la ventana.</caption>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="modelos">
+    <div class="section-head">
+      <div><div class="title-row"><span class="section-number">05</span><h2>ComparaciÃ³n de enfoques</h2></div>
+      <p class="section-desc">Resultados medidos: clasificaciÃ³n, correlaciÃ³n con el CAR y controles placebo</p></div>
+      <div class="tools"><div class="segments" id="model-view-controls"></div></div>
+    </div>
+    <div id="model-content"></div>
+  </section>
+
+  <section class="section methodology">
+    <div><p class="eyebrow muted" style="margin-bottom:8px">Notas de lectura</p><h3>Alcance y lÃ­mites</h3></div>
+    <div id="metodologia"></div>
+  </section>
+
+  <footer class="footer">
+    <span>Universidad de los Andes Â· Esteban Alvarado y Camilo Linares</span>
+    <span class="mono" id="footer-meta"></span>
+  </footer>
+</main>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+<div class="sr-only" role="status" aria-live="polite" id="status"></div>
+<noscript><p style="padding:30px">Activa JavaScript para explorar el dashboard.</p></noscript>
+
+<script id="datos" type="application/json">/*__DATOS__*/</script>
+<script>
+'use strict';
+const D = JSON.parse(document.getElementById('datos').textContent);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const ENFOQUES = [
+  {id:'probe', label:'Probe', nombre:'FinBERT + linear probing'},
+  {id:'finbert', label:'FinBERT', nombre:'FinBERT off-the-shelf'},
+  {id:'vader', label:'VADER', nombre:'VADER (lexicÃ³n)'}
+];
+const LINE = {NCLH:'#ff9d00',DIS:'#ffe14a',CRWD:'#68bcff',TGT:'#ffb853',CMG:'#dfdfdf',DDOG:'#7298c3',SPY:'#ffffff',VGK:'#aaaaaa',EWJ:'#848484',AAXJ:'#686868'};
+const DASH = {NCLH:'',DIS:'8 3',CRWD:'2 3',TGT:'10 3 2 3',CMG:'5 4',DDOG:'14 4',SPY:'',VGK:'4 5',EWJ:'2 6',AAXJ:'9 6'};
+const pct = (v,n=2) => (v>=0?'+':'') + (v*100).toFixed(n) + '%';
+const num = s => String(s).replace('.', ',');
+
+const S = {
+  liquidez:'todos', ticker:'TODOS', enfoque:'probe', anio:null,
+  sel:null, rango:36, ventana:10, alpha:'con', vistaModelo:'clasificacion', ocultas:{}
+};
+
+const anios = [...new Set(Object.values(D.calendario).flat().map(d => d.d.slice(0,4)))].sort();
+S.anio = anios[anios.length-1] || '2022';
+
+const tickersActivos = () => D.tickers.filter(t => S.liquidez === 'todos' || t.liquidez === S.liquidez);
+const eventosPorDia = () => {
+  const m = {};
+  (D.car.eventos || []).forEach(e => { (m[e.t0.slice(0,10)] = m[e.t0.slice(0,10)] || []).push(e); });
+  return m;
+};
+const EVDIA = eventosPorDia();
+
+function serieCalendario(){
+  const activos = S.ticker === 'TODOS' ? tickersActivos().map(t=>t.sym) : [S.ticker];
+  const porDia = {};
+  activos.forEach(sym => (D.calendario[sym] || []).forEach(d => {
+    if (!d.d.startsWith(S.anio)) return;
+    const acc = porDia[d.d] = porDia[d.d] || {d:d.d, n:0, sent:0, ret:0, k:0, tickers:[]};
+    acc.n += d.n; acc.sent += d[S.enfoque]; acc.ret += (d.ret ?? 0); acc.k++; acc.tickers.push(sym);
+  }));
+  return Object.values(porDia).map(a => {
+    const sent = a.sent / a.k, ret = a.ret / a.k;
+    let estado = 'sin_datos';
+    if (a.n >= 3 && Math.abs(sent) >= 0.02 && Math.abs(ret) >= 0.0005) estado = (sent>0)===(ret>0) ? 'coincide' : 'diverge';
+    return {d:a.d, n:a.n, sent, ret, estado, tickers:a.tickers};
+  }).sort((x,y) => x.d < y.d ? -1 : 1);
+}
+
+const colorEstado = (dia, cap=0.03) => {
+  if (dia.estado === 'sin_datos') return '#202020';
+  const t = Math.min(1, Math.abs(dia.ret)/cap);
+  const base = dia.estado === 'coincide' ? [29,122,61] : [161,37,34];
+  return 'rgb(' + base.map(v => Math.round(9 + (v-9)*(0.3+0.7*t))).join(',') + ')';
+};
+
+function tip(e, titulo, filas){
+  const t = $('tooltip');
+  t.innerHTML = `<b>${esc(titulo)}</b><dl>${filas.map(([k,v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`;
+  t.hidden = false;
+  t.style.left = Math.min(e.clientX+14, innerWidth - t.offsetWidth - 12) + 'px';
+  t.style.top = Math.min(e.clientY+16, innerHeight - t.offsetHeight - 12) + 'px';
+}
+const ocultarTip = () => { $('tooltip').hidden = true; };
+
+function segmentos(cont, items, activo, onClick){
+  $(cont).innerHTML = items.map(i => `<button data-v="${i.v}" aria-pressed="${i.v===activo}">${esc(i.label)}</button>`).join('');
+  $(cont).querySelectorAll('button').forEach(b => b.onclick = () => onClick(b.dataset.v));
+}
+
+function pintarUniverso(){
+  const dia = S.sel;
+  const maxN = Math.max(1, ...D.tickers.map(t => (D.calendario[t.sym]||[]).reduce((s,d)=>s+d.n,0)));
+  $('universe').innerHTML = tickersActivos().map(t => {
+    const dias = D.calendario[t.sym] || [];
+    const total = dias.reduce((s,d)=>s+d.n, 0);
+    const delDia = dia ? dias.find(d => d.d === dia) : null;
+    const ret = delDia ? delDia.ret : null;
+    const color = ret == null ? '#3a3a3a' : (ret >= 0 ? '#1d7a3d' : '#a12522');
+    return `<button class="u-card" data-sym="${t.sym}" aria-pressed="${S.ticker===t.sym}">
+      <span class="u-top"><span class="u-sym">${t.sym}</span><span class="u-liq">${t.liquidez}</span></span>
+      <span class="u-name">${esc(t.nombre)}</span>
+      <span class="u-bar"><i style="width:${(total/maxN*100).toFixed(1)}%;background:${color}"></i></span>
+      <span class="u-meta"><span>${total.toLocaleString('es')} msgs</span><span class="${ret==null?'muted':ret>=0?'positive':'negative'}">${ret==null?'Â·':num(pct(ret))}</span></span>
+    </button>`;
+  }).join('');
+  $('universe').querySelectorAll('[data-sym]').forEach(b => b.onclick = () => { S.ticker = S.ticker===b.dataset.sym ? 'TODOS' : b.dataset.sym; render(); });
+  $('universe-note').textContent = dia
+    ? `Barra: volumen total de mensajes puntuados (2020-2022). Color y cifra: retorno real del ${dia}.`
+    : 'Barra: volumen total de mensajes puntuados (2020-2022). Selecciona un dÃ­a en el calendario para ver el retorno de esa jornada.';
+}
+
+function pintarCalendario(){
+  const serie = serieCalendario();
+  segmentos('ticker-controls', [{v:'TODOS',label:'Todos'}, ...tickersActivos().map(t=>({v:t.sym,label:t.sym}))], S.ticker, v => { S.ticker=v; render(); });
+  segmentos('approach-controls', ENFOQUES.map(e=>({v:e.id,label:e.label})), S.enfoque, v => { S.enfoque=v; render(); });
+  segmentos('year-controls', anios.map(a=>({v:a,label:a})), S.anio, v => { S.anio=v; S.sel=null; render(); });
+
+  if (!serie.length){
+    $('calendar-grid').innerHTML = '';
+    $('calendar-months').innerHTML = '';
+    $('calendar-stats').innerHTML = '<div class="empty">AÃºn no hay sentimiento diario calculado. Corre <code>python -m research.event_study.sentimiento_diario</code> y vuelve a generar el paquete.</div>';
+    $('day-panel').innerHTML = '';
+    return;
+  }
+
+  const evaluados = serie.filter(d => d.estado !== 'sin_datos');
+  const coinciden = evaluados.filter(d => d.estado === 'coincide').length;
+  const tasa = evaluados.length ? coinciden/evaluados.length : 0;
+  $('calendar-stats').innerHTML = [
+    ['Concurrencia', evaluados.length ? num((tasa*100).toFixed(1))+'%' : 'N/D'],
+    ['DÃ­as evaluados', evaluados.length],
+    ['Divergencia', evaluados.length ? num(((1-tasa)*100).toFixed(1))+'%' : 'N/D'],
+    ['Mensajes', serie.reduce((s,d)=>s+d.n,0).toLocaleString('es')]
+  ].map(([n,v]) => `<div class="stat"><span class="value">${v}</span> <span class="name">${n}</span></div>`).join('');
+
+  const inicio = new Date(Date.UTC(+S.anio,0,1)), offset = inicio.getUTCDay();
+  const porFecha = Object.fromEntries(serie.map(d => [d.d, d]));
+  const dias = [];
+  for (let t = new Date(inicio); t.getUTCFullYear() === +S.anio; t.setUTCDate(t.getUTCDate()+1))
+    dias.push(t.toISOString().slice(0,10));
+
+  $('calendar-months').innerHTML = '<span></span>' + MESES.map((m,i) => {
+    const doy = Math.round((Date.UTC(+S.anio,i,1) - inicio)/86400000);
+    return `<span style="grid-column:${Math.floor((doy+offset)/7)+2};grid-row:1">${m}</span>`;
+  }).join('');
+
+  const foco = S.sel || serie.filter(d=>d.estado!=='sin_datos').slice(-1)[0]?.d || serie[0].d;
+  $('calendar-grid').innerHTML =
+    Array.from({length:offset}, () => '<span class="day blank"></span>').join('') +
+    dias.map(fecha => {
+      const d = porFecha[fecha];
+      const ev = EVDIA[fecha] || [];
+      const bg = d ? colorEstado(d) : '#141414';
+      const etiqueta = d ? `${fecha}: ${d.estado==='coincide'?'misma direcciÃ³n':d.estado==='diverge'?'divergencia':'sin evaluaciÃ³n'}` : `${fecha}: sin mensajes`;
+      return `<button class="day" data-fecha="${fecha}" style="background:${bg};${ev.length?'border-color:#e8c04d;':''}" aria-pressed="${fecha===foco}" aria-label="${esc(etiqueta)}">${ev.length?'<span class="event-mark">E</span>':''}</button>`;
+    }).join('');
+
+  $('calendar-grid').querySelectorAll('[data-fecha]').forEach(b => {
+    const fecha = b.dataset.fecha, d = porFecha[fecha], ev = EVDIA[fecha] || [];
+    b.onclick = () => { S.sel = fecha; render(); };
+    b.onmouseenter = e => tip(e, fecha, [
+      ['Sentimiento', d ? num(d.sent.toFixed(3)) : 'sin mensajes'],
+      ['Retorno', d && d.ret ? num(pct(d.ret)) : 'Â·'],
+      ['Mensajes', d ? d.n : 0],
+      ...ev.map(x => ['Evento', x.ticker + ' Â· ' + (x.descripcion || x.tipo_evento)])
+    ]);
+    b.onmouseleave = ocultarTip;
+  });
+
+  pintarDia(porFecha[foco], foco);
+}
+
+function pintarDia(d, fecha){
+  const ev = EVDIA[fecha] || [];
+  if (!d){ $('day-panel').innerHTML = `<div class="day-summary"><p class="eyebrow muted">${esc(fecha)}</p><p class="note">Sin mensajes ese dÃ­a.</p></div><div></div>`; return; }
+  const nombre = {coincide:'MISMA DIRECCIÃN', diverge:'DIVERGENCIA', sin_datos:'SIN EVALUACIÃN'}[d.estado];
+  const color = {coincide:'#38e065', diverge:'#ff514a', sin_datos:'#aaa'}[d.estado];
+  const porEnfoque = ENFOQUES.map(e => {
+    const vals = (S.ticker==='TODOS' ? tickersActivos().map(t=>t.sym) : [S.ticker])
+      .map(sym => (D.calendario[sym]||[]).find(x => x.d === fecha)).filter(Boolean);
+    const v = vals.length ? vals.reduce((s,x)=>s+x[e.id],0)/vals.length : 0;
+    return {nombre:e.nombre, v};
+  });
+  $('day-panel').innerHTML = `
+    <div class="day-summary">
+      <p class="eyebrow muted">Detalle de la jornada</p>
+      <h3>${esc(fecha)}</h3>
+      <span class="state-tag" style="color:${color};border-color:${color}">${nombre}</span>
+      <dl class="day-metrics">
+        <div class="day-metric"><dt>Sentimiento</dt><dd style="color:${d.sent>=0?'#38e065':'#ff514a'}">${num(d.sent.toFixed(3))}</dd></div>
+        <div class="day-metric"><dt>Retorno</dt><dd style="color:${d.ret>=0?'#38e065':'#ff514a'}">${d.ret?num(pct(d.ret)):'Â·'}</dd></div>
+        <div class="day-metric"><dt>Mensajes</dt><dd>${d.n}</dd></div>
+      </dl>
+      ${ev.length ? `<p class="note">${ev.map(x => esc(x.ticker+' Â· '+(x.descripcion||x.tipo_evento))).join('<br>')}</p>` : ''}
+    </div>
+    <div class="approach-rows">
+      <p class="eyebrow muted">Sentimiento medio del dÃ­a, por enfoque</p>
+      ${porEnfoque.map(p => {
+        const ancho = Math.min(50, Math.abs(p.v)*50);
+        const izq = p.v >= 0 ? 50 : 50 - ancho;
+        return `<div class="a-row"><span class="a-name">${esc(p.nombre)}</span>
+          <span class="a-track"><i class="zero"></i><i style="left:${izq}%;width:${ancho}%;background:${p.v>=0?'#1d7a3d':'#a12522'}"></i></span>
+          <span class="mono" style="text-align:right;color:${p.v>=0?'#38e065':'#ff514a'}">${num(p.v.toFixed(3))}</span></div>`;
+      }).join('')}
+      <p class="note">Escala fija de âˆ’1 a +1. La lÃ­nea central es el cero.</p>
+    </div>`;
+}
+
+function grafico(destino, series, yLabels, xLabels, base, alto=230){
+  if (!series.length){ $(destino).innerHTML = '<div class="empty">Activa al menos una serie.</div>'; return; }
+  $(destino).innerHTML = `<div class="chart-wrap">
+    <div class="chart-labels">${yLabels.map((l,i)=>`<span style="top:${i*25}%">${esc(l)}</span>`).join('')}</div>
+    <svg class="chart-svg" viewBox="0 0 1000 ${alto}" preserveAspectRatio="none" role="img">
+      ${[0,1,2,3,4].map(i=>`<line x1="0" y1="${i*alto/4}" x2="1000" y2="${i*alto/4}" stroke="#333" vector-effect="non-scaling-stroke"/>`).join('')}
+      ${base!=null?`<line x1="0" y1="${base}" x2="1000" y2="${base}" stroke="#737373" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>`:''}
+      ${series.map(s=>`<path d="${s.d}" fill="none" stroke="${s.color}" stroke-width="${s.width}" stroke-dasharray="${s.dash||''}" vector-effect="non-scaling-stroke"><title>${esc(s.sym)}</title></path>`).join('')}
+    </svg>
+    <div class="x-labels">${xLabels.map(x=>`<span>${esc(x)}</span>`).join('')}</div>
+  </div>`;
+}
+
+function pintarRendimiento(){
+  segmentos('range-controls', [{v:12,label:'1A'},{v:24,label:'2A'},{v:36,label:'Todo'}], S.rango, v => { S.rango=+v; render(); });
+  const fechas = D.rendimiento.fechas, n = fechas.length;
+  const desde = Math.max(0, n - Math.round(S.rango*21));
+  const simbolos = [...tickersActivos().map(t=>t.sym), ...D.referencias.map(r=>r.sym)];
+  const visibles = simbolos.filter(s => !S.ocultas[s] && D.rendimiento.series[s]);
+
+  $('series-controls').innerHTML = simbolos.map(s =>
+    `<button data-serie="${s}" aria-pressed="${!S.ocultas[s]}"><svg class="line-key" viewBox="0 0 24 8"><line x1="0" x2="24" y1="4" y2="4" stroke="${LINE[s]}" stroke-width="2" stroke-dasharray="${DASH[s]}"/></svg>${s}</button>`).join('');
+  $('series-controls').querySelectorAll('button').forEach(b => b.onclick = () => { S.ocultas[b.dataset.serie] = !S.ocultas[b.dataset.serie]; render(); });
+
+  const reindex = s => { const a = D.rendimiento.series[s].slice(desde); return a.map(v => v/a[0]*100); };
+  let lo = Infinity, hi = -Infinity;
+  visibles.forEach(s => reindex(s).forEach(v => { lo=Math.min(lo,v); hi=Math.max(hi,v); }));
+  if (!isFinite(lo)) { lo = 90; hi = 110; }
+  const pad = (hi-lo)*0.08; lo -= pad; hi += pad;
+  const y = v => 230 - ((v-lo)/(hi-lo))*230;
+
+  grafico('performance-chart', visibles.map(s => {
+    const a = reindex(s);
+    return {sym:s, color:LINE[s], width: D.tickers.some(t=>t.sym===s)?1.8:1.1, dash:DASH[s],
+      d: a.map((v,i)=>(i?'L':'M')+((i/(a.length-1))*1000).toFixed(1)+' '+y(v).toFixed(1)).join(' ')};
+  }), [0,1,2,3,4].map(i => (hi-(hi-lo)*i/4).toFixed(0)),
+     [0,1,2,3,4,5].map(i => fechas[Math.min(n-1, desde + Math.round(i*(n-1-desde)/5))].slice(0,7)),
+     y(100).toFixed(1));
+
+  $('performance-table').innerHTML = simbolos.map(s => {
+    const a = reindex(s);
+    const total = a[a.length-1]/a[0]-1;
+    let peak = -Infinity, dd = 0;
+    a.forEach(v => { peak = Math.max(peak,v); dd = Math.min(dd, v/peak-1); });
+    const rets = a.slice(1).map((v,i)=>v/a[i]-1);
+    const media = rets.reduce((x,y)=>x+y,0)/rets.length;
+    const sd = Math.sqrt(rets.reduce((x,y)=>x+(y-media)**2,0)/rets.length)*Math.sqrt(252);
+    return `<tr><td>${s}${S.ocultas[s]?' Â· oculto':''}</td><td class="${total>=0?'positive':'negative'}">${num(pct(total,1))}</td><td>${num((sd*100).toFixed(0))}%</td><td>${num((dd*100).toFixed(1))}%</td></tr>`;
+  }).join('');
+  $('perf-note').textContent = `Desde ${fechas[desde]} hasta ${fechas[n-1]}. Precios ajustados reales; cada serie se reindexa a 100 en la primera fecha del perÃ­odo.`;
+}
+
+function pintarCAR(){
+  segmentos('window-controls', [{v:5,label:'Â±5d'},{v:10,label:'Â±10d'},{v:20,label:'Â±20d'}], S.ventana, v => { S.ventana=+v; render(); });
+  segmentos('alpha-controls', [{v:'con',label:'Con alpha'},{v:'sin',label:'Ajustado por mercado'}], S.alpha, v => { S.alpha=v; render(); });
+
+  const campo = S.alpha === 'con' ? 'car_medio' : 'car_medio_sin_alpha';
+  const curvas = (D.car.curvas||[]).filter(c => c.ventana === S.ventana);
+  const activos = tickersActivos().map(t=>t.sym).filter(s => !S.ocultas[s]);
+  const porTicker = {};
+  curvas.forEach(c => { if (activos.includes(c.ticker)) (porTicker[c.ticker] = porTicker[c.ticker] || []).push(c); });
+
+  let lo = Infinity, hi = -Infinity;
+  Object.values(porTicker).forEach(arr => arr.forEach(c => { lo=Math.min(lo,c[campo]); hi=Math.max(hi,c[campo]); }));
+  if (!isFinite(lo)) { lo=-0.05; hi=0.05; }
+  const pad = (hi-lo)*0.15 || 0.01; lo -= pad; hi += pad;
+  const y = v => 230 - ((v-lo)/(hi-lo))*230;
+
+  grafico('car-chart', Object.entries(porTicker).map(([sym,arr]) => {
+    const orden = arr.sort((a,b)=>a.dia_rel-b.dia_rel);
+    return {sym, color:LINE[sym], width:1.8,
+      d: orden.map((c,i)=>(i?'L':'M')+((i/(orden.length-1))*1000).toFixed(1)+' '+y(c[campo]).toFixed(1)).join(' ')};
+  }), [0,1,2,3,4].map(i => ((hi-(hi-lo)*i/4)*100).toFixed(1)+'%'),
+     [-S.ventana, -Math.round(S.ventana/2), 0, Math.round(S.ventana/2), S.ventana].map(v => (v>0?'+':'')+v+'d'),
+     y(0).toFixed(1));
+
+  $('car-table').innerHTML = Object.entries(porTicker).map(([sym,arr]) => {
+    const fin = arr.sort((a,b)=>a.dia_rel-b.dia_rel).slice(-1)[0];
+    return `<tr><td>${sym}</td><td>${fin.n_eventos}</td><td class="${fin[campo]>=0?'positive':'negative'}">${num(pct(fin[campo]))}</td></tr>`;
+  }).join('');
+
+  $('alpha-warn').innerHTML = S.alpha === 'con'
+    ? 'Modelo de mercado completo (alpha + beta). En ventanas largas el alpha estimado se extrapola a todos los dÃ­as y domina la acumulaciÃ³n: en Â±20 dÃ­as el arrastre llega a varios puntos porcentuales. Para leer ventanas largas, cambia a <b>ajustado por mercado</b>.'
+    : 'Retorno ajustado solo por mercado (beta, sin alpha). Evita el arrastre del alpha en ventanas largas, a costa de no descontar el rendimiento propio del ticker.';
+}
+
+function pintarModelos(){
+  segmentos('model-view-controls', [
+    {v:'clasificacion',label:'ClasificaciÃ³n'},{v:'correlacion',label:'CorrelaciÃ³n con CAR'},{v:'aprendizaje',label:'Â¿Etiquetar mÃ¡s?'}
+  ], S.vistaModelo, v => { S.vistaModelo=v; render(); });
+
+  const M = D.modelos;
+  if (S.vistaModelo === 'clasificacion'){
+    const filas = (M.comparacion||[]).filter(r => r.evaluado_en === 'test completo')
+      .sort((a,b) => b.macro_f1 - a.macro_f1);
+    $('model-content').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Enfoque</th><th>n</th><th>Accuracy</th><th>Macro-F1</th></tr></thead>
+        <tbody>${filas.map(r => `<tr><td>${esc(r.enfoque)}</td><td>${r.n}</td><td>${num(r.accuracy.toFixed(3))}</td><td>${num(r.macro_f1.toFixed(3))}</td></tr>`).join('')}</tbody>
+        <caption>Test de ${filas[0]?.n ?? 0} pares (post, ticker) etiquetados a mano. El placebo entrena la misma cabeza con las etiquetas permutadas.</caption>
+      </table>
+      <p class="note">Acuerdo entre anotadores en el lote doble: Îº = ${num((M.kappa_doble.kappa ?? 0).toFixed(3))} sobre ${M.kappa_doble.n ?? 0} pares, con ${num(((M.kappa_doble.acuerdo_exacto ?? 0)*100).toFixed(1))}% de acuerdo exacto. Ese es el techo contra el que hay que leer cualquier modelo.</p>`;
+  } else if (S.vistaModelo === 'correlacion'){
+    const corr = (M.correlaciones||[]).filter(r => r.analisis === 'correlacion' && r.segmento === 'todos');
+    const plac = (M.correlaciones||[]).filter(r => r.analisis === 'placebo');
+    const h2 = M.h2 || [];
+    $('model-content').innerHTML = `
+      <div class="grid2">
+        <table class="data-table">
+          <thead><tr><th>Enfoque</th><th>Ï pre</th><th>Ï post</th><th>Diferencia</th><th>p</th></tr></thead>
+          <tbody>${h2.map(r => `<tr><td>${esc(r.enfoque)}</td><td>${num(r.rho_pre.toFixed(3))}</td><td class="positive">${num(r.rho_post.toFixed(3))}</td><td>${num(r.diferencia.toFixed(3))}</td><td>${r.p_unilateral < 0.0001 ? '&lt;0,0001' : num(r.p_unilateral.toFixed(4))}</td></tr>`).join('')}</tbody>
+          <caption>CorrelaciÃ³n de Spearman con el CAR [0,+5] sobre ${h2[0]?.n_eventos ?? 0} eventos. Bootstrap pareado de 10.000 remuestreos.</caption>
+        </table>
+        <table class="data-table">
+          <thead><tr><th>Enfoque</th><th>Placebo permutaciÃ³n</th><th>Placebo fechas</th></tr></thead>
+          <tbody>${plac.map(r => `<tr><td>${esc(r.enfoque)}</td><td>p${num(String(r.percentil_en_placebo_permutacion))}</td><td>p${num(String(r.percentil_en_placebo_fechas))}</td></tr>`).join('')}</tbody>
+          <caption>Percentil que ocupa el Ï observado dentro de cada distribuciÃ³n nula. Por encima de p95 en ambas.</caption>
+        </table>
+      </div>
+      <p class="note">El sentimiento <b>previo</b> al evento no correlaciona con el retorno posterior (${corr.filter(c=>c.ventana==='pre').map(c=>esc(c.enfoque)+' '+num(c.rho.toFixed(3))).join(' Â· ')}). El sentimiento <b>posterior</b> sÃ­. Es una seÃ±al reactiva, no anticipatoria.</p>`;
+  } else {
+    const curva = M.curva_aprendizaje || [];
+    const porN = {};
+    curva.forEach(r => { (porN[r.n_train] = porN[r.n_train] || []).push(r.macro_f1); });
+    const puntos = Object.entries(porN).map(([n,vals]) => ({n:+n, f1: vals.reduce((a,b)=>a+b,0)/vals.length})).sort((a,b)=>a.n-b.n);
+    $('model-content').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Ejemplos de entrenamiento</th><th>Macro-F1 (media de 3 semillas)</th></tr></thead>
+        <tbody>${puntos.map(p => `<tr><td>${p.n}</td><td>${num(p.f1.toFixed(3))}</td></tr>`).join('')}</tbody>
+        <caption>Curva de aprendizaje de la cabeza lineal sobre el corpus etiquetado.</caption>
+      </table>
+      <p class="note">La curva sube hasta ~272 ejemplos y ahÃ­ se aplana: el Ãºltimo tramo da ${num((puntos.at(-1).f1 - puntos.at(-2).f1).toFixed(3))} de macro-F1, menos que la variaciÃ³n entre semillas. Etiquetar mÃ¡s del mismo tipo no rinde; lo que falta es consistencia de criterio.</p>`;
+  }
+}
+
+function pintarMeta(){
+  $('meta-rango').textContent = 'TEXTO ' + D.meta.rango_texto + ' Â· EVENTOS ' + D.meta.rango_eventos;
+  $('hero-facts').innerHTML = [
+    ['06', 'tickers del estudio'], ['03', 'enfoques de sentimiento'],
+    [String(D.meta.n_eventos), 'eventos con CAR'],
+    [(Object.values(D.calendario).reduce((s,v)=>s+v.reduce((a,d)=>a+d.n,0),0)).toLocaleString('es'), 'mensajes puntuados']
+  ].map(([b,t]) => `<div><b>${b}</b> ${t}</div>`).join('');
+  $('metodologia').innerHTML = `
+    <details open><summary>QuÃ© muestra este tablero</summary>
+      <p>Todos los nÃºmeros salen de los resultados del repositorio: precios ajustados reales, el corpus StockTwits del bucket NYU, los 55 eventos con su retorno anormal y las mÃ©tricas de los tres enfoques. No hay series simuladas.</p></details>
+    <details><summary>LÃ­mites del alcance</summary>
+      ${D.meta.advertencias.map(a => `<p>${esc(a)}</p>`).join('')}</details>
+    <details><summary>CÃ³mo leer la concurrencia</summary>
+      <p>El calendario compara el signo del sentimiento agregado del dÃ­a con el signo del retorno de esa jornada. Una coincidencia indica asociaciÃ³n contemporÃ¡nea, no capacidad predictiva: el contraste de anticipaciÃ³n estÃ¡ en la secciÃ³n de modelos, y da que el sentimiento previo no correlaciona con el retorno posterior.</p></details>`;
+  $('footer-meta').textContent = 'Generado ' + D.meta.generado.slice(0,16).replace('T',' ') + ' UTC';
+}
+
+function render(){
+  ocultarTip();
+  pintarMeta(); pintarUniverso(); pintarCalendario(); pintarRendimiento(); pintarCAR(); pintarModelos();
+  $('status').textContent = 'Vista: ' + (S.ticker==='TODOS'?'cartera':S.ticker) + ', ' + S.anio + ', ' + S.enfoque;
+}
+$('liquidez').onchange = e => { S.liquidez = e.target.value; S.ticker = 'TODOS'; render(); };
+addEventListener('scroll', ocultarTip, {passive:true});
+addEventListener('keydown', e => { if (e.key === 'Escape') ocultarTip(); });
+render();
+</script>
+</body></html>
