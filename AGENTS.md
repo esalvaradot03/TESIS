@@ -417,21 +417,42 @@ research/event_study/
 │                                agrupados por post_id + manifest.json
 ├── kappa_calculator.py       ✓ Cohen's kappa entre dos CSVs de etiquetado
 ├── event_windows.py          ✓ earnings + upgrades/downgrades vía yfinance
-├── linear_probe.py           ⏳ pendiente — OJO: build_corpus.py etiqueta por
-│                                (post_id, target_ticker); es un schema distinto
-│                                al de src/labeling/labeled_store.py y
-│                                src/sentiment/finbert_finetune.py (por post_id
-│                                solo) — hay que decidir si se reconcilian o se
-│                                mantienen como dos corpus separados
-├── evaluate_approaches.py    ⏳ pendiente
+├── linear_probe.py           ✓ cabeza lineal sobre FinBERT congelado para el
+│                                schema (post_id, target_ticker). Mapea
+│                                bullish→positive / bearish→negative y excluye
+│                                unusable. Usa los hiperparámetros del
+│                                pre-registro (200 épocas, lr 1e-3): los
+│                                defaults del repo (3 épocas, lr 1e-4) dejan la
+│                                cabeza en azar con corpus de este tamaño.
+│                                DECIDIDO: se mantiene como corpus separado del
+│                                de src/labeling/ (por post_id), no se reconcilian
+├── evaluate_approaches.py    ✓ 3 enfoques + baseline mayoritaria + placebo
+│                                (etiquetas permutadas), con desglose por mitad
+│                                de anotador — mide transferencia de criterio
 ├── car_analysis.py           ⏳ pendiente (bloqueado por el pre-registro, regla 1)
 └── results_event_study.md    ⏳ pendiente
 
 data/manual_labels/           CSVs de etiquetado + manifest.json, versionados
-                                  en git (excepción en .gitignore)
-docs/codebook_etiquetado.md   ⏳ referenciado en conversaciones previas pero no
-                                  existe en el repo — falta escribirlo/commitearlo
-docs/pre_registro_event_study.md  ⏳ pendiente
+                                  en git (excepción en .gitignore).
+                                  Acuerdo: kappa 0.628 en l0 y 0.788 en doble
+                                  (n=155, 86.5% de acuerdo exacto).
+                                  ⚠ OJO: 182 pares de camilo (79 en test, 103
+                                  en train) NO son etiquetado humano — pasaron
+                                  de unusable a una clase por conversión
+                                  automática (commit c91102e; marca en la
+                                  columna nota, todas con confianza=1 y 84% a
+                                  neutral). Para reportar el corpus como
+                                  recurso de anotación humana, usar los
+                                  originales de camilo en 674fe0e.
+                                  Una fila (2656343/CMG) se etiquetó sobre
+                                  texto dañado por Excel y queda excluida:
+                                  ver _filas_texto_alterado.csv
+docs/codebook_etiquetado.md   ✓ commiteado 2026-09-11 (769bc91)
+docs/pre_registro_event_study.md  ⚠ BORRADOR — pendiente de revisión de Sergio.
+                                  Mientras siga en borrador, TODO resultado de
+                                  la comparación de enfoques es exploratorio
+                                  (regla 1). Incluye la decisión pendiente
+                                  sobre los 182 pares automáticos
 
 # Ya construido (subsistema anterior de comparación de sentimiento, por post_id):
 src/sentiment/finbert_finetune.py           ✓ linear probing sobre embeddings [CLS]
