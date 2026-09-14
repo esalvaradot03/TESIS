@@ -429,21 +429,25 @@ research/event_study/
 ├── evaluate_approaches.py    ✓ 3 enfoques + baseline mayoritaria + placebo
 │                                (etiquetas permutadas), con desglose por mitad
 │                                de anotador — mide transferencia de criterio
-├── car_analysis.py           ⏳ pendiente (bloqueado por el pre-registro, regla 1)
+├── car_analysis.py           ✓ CAR (CAPM vs SPY, estimación [-250,-30],
+│                                ventanas [-5,+5]) contra sentimiento por
+│                                ventana con los 3 enfoques + 2 placebos.
+│                                55 eventos (54 earnings + Iger, 2020-10 a
+│                                2022-11): rho_post 0.35-0.43 (p<0.01) y
+│                                rho_pre sin significancia. Desviaciones
+│                                declaradas: precios de yfinance y earnings
+│                                desde 2020-10 (límite de earnings_dates)
+├── bootstrap_h2.py           ✓ bootstrap pareado rho_post vs rho_pre (10.000
+│                                remuestreos); H2 se sostiene en los 3
+│                                enfoques, IC95 excluye cero, p<=0.0004
+├── curva_aprendizaje.py      ✓ la curva se aplana en ~272 pares: etiquetar
+│                                más del mismo tipo no rinde
 └── results_event_study.md    ⏳ pendiente
 
 data/manual_labels/           CSVs de etiquetado + manifest.json, versionados
                                   en git (excepción en .gitignore).
                                   Acuerdo: kappa 0.628 en l0 y 0.788 en doble
                                   (n=155, 86.5% de acuerdo exacto).
-                                  ⚠ OJO: 182 pares de camilo (79 en test, 103
-                                  en train) NO son etiquetado humano — pasaron
-                                  de unusable a una clase por conversión
-                                  automática (commit c91102e; marca en la
-                                  columna nota, todas con confianza=1 y 84% a
-                                  neutral). Para reportar el corpus como
-                                  recurso de anotación humana, usar los
-                                  originales de camilo en 674fe0e.
                                   Una fila (2656343/CMG) se etiquetó sobre
                                   texto dañado por Excel y queda excluida:
                                   ver _filas_texto_alterado.csv
@@ -451,8 +455,7 @@ docs/codebook_etiquetado.md   ✓ commiteado 2026-09-11 (769bc91)
 docs/pre_registro_event_study.md  ⚠ BORRADOR — pendiente de revisión de Sergio.
                                   Mientras siga en borrador, TODO resultado de
                                   la comparación de enfoques es exploratorio
-                                  (regla 1). Incluye la decisión pendiente
-                                  sobre los 182 pares automáticos
+                                  (regla 1)
 
 # Ya construido (subsistema anterior de comparación de sentimiento, por post_id):
 src/sentiment/finbert_finetune.py           ✓ linear probing sobre embeddings [CLS]
