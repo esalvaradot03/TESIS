@@ -1,0 +1,6 @@
+enfoque,accuracy,macro_f1,n
+FinBERT off-the-shelf,0.3917,0.3699,120
+VADER (lexicón),0.3667,0.3573,120
+Linear probing (train=Esteban),0.3167,0.3029,120
+PLACEBO (etiquetas permutadas),0.35,0.3447,120
+Baseline mayoritaria (positive),0.4417,0.2042,120
