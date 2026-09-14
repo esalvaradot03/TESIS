@@ -1,0 +1,28 @@
+enfoque,evaluado_en,n,accuracy,macro_f1
+FinBERT off-the-shelf,test completo,266,0.4586,0.4012
+FinBERT off-the-shelf,test camilo,146,0.5137,0.4187
+FinBERT off-the-shelf,test esteban,120,0.3917,0.3699
+VADER,test completo,266,0.3722,0.3409
+VADER,test camilo,146,0.3767,0.299
+VADER,test esteban,120,0.3667,0.3573
+Baseline mayoritaria (neutral),test completo,266,0.4211,0.1975
+Baseline mayoritaria (neutral),test camilo,146,0.5411,0.2341
+Baseline mayoritaria (neutral),test esteban,120,0.275,0.1438
+probe (train=esteban),test completo,266,0.4173,0.409
+probe (train=esteban),test camilo,146,0.3082,0.2883
+probe (train=esteban),test esteban,120,0.55,0.541
+PLACEBO probe (train=esteban),test completo,266,0.3346,0.3243
+PLACEBO probe (train=esteban),test camilo,146,0.3151,0.2962
+PLACEBO probe (train=esteban),test esteban,120,0.3583,0.3445
+probe (train=camilo),test completo,266,0.5564,0.5112
+probe (train=camilo),test camilo,146,0.6027,0.5456
+probe (train=camilo),test esteban,120,0.5,0.4737
+PLACEBO probe (train=camilo),test completo,266,0.3383,0.278
+PLACEBO probe (train=camilo),test camilo,146,0.3836,0.2809
+PLACEBO probe (train=camilo),test esteban,120,0.2833,0.2605
+probe (train=ambos),test completo,266,0.5038,0.474
+probe (train=ambos),test camilo,146,0.5,0.4494
+probe (train=ambos),test esteban,120,0.5083,0.4928
+PLACEBO probe (train=ambos),test completo,266,0.3421,0.3176
+PLACEBO probe (train=ambos),test camilo,146,0.3904,0.3394
+PLACEBO probe (train=ambos),test esteban,120,0.2833,0.2774

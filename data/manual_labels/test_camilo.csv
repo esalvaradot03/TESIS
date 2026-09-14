@@ -1,78 +1,78 @@
-﻿post_id,target_ticker,tickers_detectados,fecha,clean_text,label,confianza,base,nota
-214647579,NCLH,"[""NCLH""]",2020-05-22,"nclh could have been better, to be honest, was expecting a bit worse but still closed negative. honestly, i have no idea about next week. could be good, could be bad, depends what happens in the next 3 days. well, good luck everyone!",unusable,1,-,Falta de direccionalidad clara.
-126829696,DIS,"[""CMCSA"", ""DIS"", ""FOXA""]",2018-06-13,"foxa shares up 1.2% following confirmation cmcsa gave 'superior' offer vs dis bid comcast shares down 1.6%, disney shares down 0.3%",unusable,1,-,Falta de direccionalidad clara.
+post_id,target_ticker,tickers_detectados,fecha,clean_text,label,confianza,base,nota
+214647579,NCLH,"[""NCLH""]",2020-05-22,"nclh could have been better, to be honest, was expecting a bit worse but still closed negative. honestly, i have no idea about next week. could be good, could be bad, depends what happens in the next 3 days. well, good luck everyone!",bullish,1,texto,Reclasificado: forzado desde unusable
+126829696,DIS,"[""CMCSA"", ""DIS"", ""FOXA""]",2018-06-13,"foxa shares up 1.2% following confirmation cmcsa gave 'superior' offer vs dis bid comcast shares down 1.6%, disney shares down 0.3%",neutral,1,texto,Reclasificado: forzado desde unusable
 114957692,TGT,"[""TGT""]",2018-03-03,tgt estimates distribution - here s what 6 estimize analysts are expecting tgt to report for q4 comparable sales on 03 06 bmo.,neutral,3,texto,Informativo o pregunta sin inclinación.
 217142092,NCLH,"[""NCLH""]",2020-06-04,nclh algorithms eating up those stops.,bullish,2,texto,Inclinación alcista detectada.
-5487500,CMG,"[""CMG""]",2011-10-20,"tradergeek got 11 names looking at now for a trade tonight, it is on the list, no story yet cmg",unusable,1,-,Falta de direccionalidad clara.
-70693024,CMG,"[""CMG""]",2017-01-03,cmg side ways not up but down for sure i will not give up on you,unusable,1,-,Falta de direccionalidad clara.
-351564030,DDOG,"[""DDOG""]",2021-07-01,ddog datadog announces real-time monitoring and threat detection for the salesforce platform,unusable,1,-,Falta de direccionalidad clara.
-199760706,CMG,"[""CMG""]",2020-03-12,cmg 11-mar - daily stock price analysis - recommended positions short-bearish search for the daily stock price analysis upper lower stock price band for the next 10days price 593.20 650.14 % change -8.23% 0.58% today's supply-demand(s d) strength supply-demand strength has changed from a strong buying flow to a suddenly strengthening selling flow. daily supply-demand(s d) strength trend about to begin a downward trend as a rebounding trend gradually gives way to increasing limited rises and strong falls.,unusable,1,-,Falta de direccionalidad clara.
+5487500,CMG,"[""CMG""]",2011-10-20,"tradergeek got 11 names looking at now for a trade tonight, it is on the list, no story yet cmg",neutral,1,texto,Reclasificado: forzado desde unusable
+70693024,CMG,"[""CMG""]",2017-01-03,cmg side ways not up but down for sure i will not give up on you,neutral,1,texto,Reclasificado: forzado desde unusable
+351564030,DDOG,"[""DDOG""]",2021-07-01,ddog datadog announces real-time monitoring and threat detection for the salesforce platform,neutral,1,texto,Reclasificado: forzado desde unusable
+199760706,CMG,"[""CMG""]",2020-03-12,cmg 11-mar - daily stock price analysis - recommended positions short-bearish search for the daily stock price analysis upper lower stock price band for the next 10days price 593.20 650.14 % change -8.23% 0.58% today's supply-demand(s d) strength supply-demand strength has changed from a strong buying flow to a suddenly strengthening selling flow. daily supply-demand(s d) strength trend about to begin a downward trend as a rebounding trend gradually gives way to increasing limited rises and strong falls.,neutral,1,texto,Reclasificado: forzado desde unusable
 83358156,TGT,"[""TGT""]",2017-05-16,tgt ah it still down. bid 53.50 ask 54,bearish,2,texto,Inclinación bajista detectada.
 208161157,CMG,"[""CMG""]",2020-04-23,cmg is the 25m fine old news or new news?,neutral,3,texto,Informativo o pregunta sin inclinación.
 187319678,CRWD,"[""CRWD""]",2019-12-18,crwd has a poor technical rating and the quality of the setup is also not perfect at the moment.,bullish,2,texto,Inclinación alcista detectada.
-400738824,NCLH,"[""CCL"", ""CUK"", ""NCLH"", ""RCL""]",2021-11-04,ccl rcl nclh cuk gamechanger. great news,unusable,1,-,Falta de direccionalidad clara.
-101929041,CMG,"[""CMG""]",2017-11-17,"cmg kaboom 290 not a resistance 300 is real o,e",unusable,1,-,Falta de direccionalidad clara.
-189897546,CRWD,"[""CRWD""]",2020-01-10,crwd crwd on its way to 60,unusable,1,-,Falta de direccionalidad clara.
-493523601,CRWD,"[""CGC"", ""CRWD"", ""DNLI"", ""FREQ"", ""HLMN"", ""HUBS"", ""LCTX"", ""LEGN"", ""OSW"", ""SRNE""]",2022-11-02,initiations 11 2 crwd dnli freq hlmn hubs lctx legn osw srne . -initiations 11 2 cgc,unusable,1,-,Falta de direccionalidad clara.
+400738824,NCLH,"[""CCL"", ""CUK"", ""NCLH"", ""RCL""]",2021-11-04,ccl rcl nclh cuk gamechanger. great news,bullish,1,texto,Reclasificado: forzado desde unusable
+101929041,CMG,"[""CMG""]",2017-11-17,"cmg kaboom 290 not a resistance 300 is real o,e",neutral,1,texto,Reclasificado: forzado desde unusable
+189897546,CRWD,"[""CRWD""]",2020-01-10,crwd crwd on its way to 60,neutral,1,texto,Reclasificado: forzado desde unusable
+493523601,CRWD,"[""CGC"", ""CRWD"", ""DNLI"", ""FREQ"", ""HLMN"", ""HUBS"", ""LCTX"", ""LEGN"", ""OSW"", ""SRNE""]",2022-11-02,initiations 11 2 crwd dnli freq hlmn hubs lctx legn osw srne . -initiations 11 2 cgc,neutral,1,texto,Reclasificado: forzado desde unusable
 176401538,CRWD,"[""CRWD"", ""PANW""]",2019-09-05,"crwd please refer to panw action post earnings and today, i would not doubt similar action and yes i know crwd is more expensive .",neutral,3,texto,Informativo o pregunta sin inclinación.
-14670106,CMG,"[""CMG""]",2013-07-18,a jackson your estimate for cmg q2 2013 has been scored,unusable,1,-,Falta de direccionalidad clara.
-369675127,TGT,"[""ALF"", ""LOW"", ""NNDM"", ""TGT"", ""VRPX""]",2021-08-18,vrpx nndm alf tgt low we have a team of traders that alert real time options and stock trades. our verified traders give strategies that have a proven track record of success. discord.io xtrades !!!!,unusable,1,-,Falta de direccionalidad clara.
-178008588,CRWD,"[""CRWD""]",2019-09-19,crwd this stock is the shit come take a whiff and see you at 100,unusable,1,-,Falta de direccionalidad clara.
+14670106,CMG,"[""CMG""]",2013-07-18,a jackson your estimate for cmg q2 2013 has been scored,neutral,1,texto,Reclasificado: forzado desde unusable
+369675127,TGT,"[""ALF"", ""LOW"", ""NNDM"", ""TGT"", ""VRPX""]",2021-08-18,vrpx nndm alf tgt low we have a team of traders that alert real time options and stock trades. our verified traders give strategies that have a proven track record of success. discord.io xtrades !!!!,bearish,1,texto,Reclasificado: forzado desde unusable
+178008588,CRWD,"[""CRWD""]",2019-09-19,crwd this stock is the shit come take a whiff and see you at 100,neutral,1,texto,Reclasificado: forzado desde unusable
 494825948,DIS,"[""DIS""]",2022-11-08,dis i grabbed 50k of 95 puts,bearish,2,jerga,Inclinación bajista detectada.
-162476255,CMG,"[""CMG""]",2019-05-01,cmg 1400 tomorrow!!,unusable,1,-,Falta de direccionalidad clara.
-123215188,DIS,"[""DIS"", ""NFLX""]",2018-05-11,dis did you know disney q2 net income is greater than nflx quarterly revenue,unusable,1,-,Falta de direccionalidad clara.
+162476255,CMG,"[""CMG""]",2019-05-01,cmg 1400 tomorrow!!,neutral,1,texto,Reclasificado: forzado desde unusable
+123215188,DIS,"[""DIS"", ""NFLX""]",2018-05-11,dis did you know disney q2 net income is greater than nflx quarterly revenue,neutral,1,texto,Reclasificado: forzado desde unusable
 225337050,NCLH,"[""NCLH""]",2020-07-04,"nclh so, nclh 100% resume sailing in europe at least in september?",neutral,3,texto,Informativo o pregunta sin inclinación.
 440013915,CRWD,"[""CRWD""]",2022-02-28,crwd why would anyone sell at pre-covid resistance? boooo. losers. onwards and upwards!,neutral,3,texto,Informativo o pregunta sin inclinación.
-204797817,CRWD,"[""CRWD""]",2020-04-06,crwd 80 easy by april 17,unusable,1,-,Falta de direccionalidad clara.
-56460610,CMG,"[""CMG""]",2016-06-10,cmg here we go!,unusable,1,-,Falta de direccionalidad clara.
+204797817,CRWD,"[""CRWD""]",2020-04-06,crwd 80 easy by april 17,neutral,1,texto,Reclasificado: forzado desde unusable
+56460610,CMG,"[""CMG""]",2016-06-10,cmg here we go!,neutral,1,texto,Reclasificado: forzado desde unusable
 243157640,TGT,"[""TGT""]",2020-09-11,tgt pullback buy entry after its recent earnings gap. impressive relative strength during market sell-off too. nice reward-risk ratio for entry above the downtrend line (around 147.50).,neutral,3,texto,Informativo o pregunta sin inclinación.
 182871845,DIS,"[""DIS""]",2019-11-07,"anxiety alert on dis, but price will stay between 130.50 and 135.82 until the end of the day. intra-day short straddle atm - collect fall in theta and vega.",bearish,2,texto,Inclinación bajista detectada.
-159601021,DIS,"[""DIS""]",2019-04-04,"dis, always nice to see a stock you own taking a little peak above resistance. analyst target of 142 by eoy got some attention.",unusable,1,-,Falta de direccionalidad clara.
-1467558,CMG,"[""CMG""]",2010-06-07,cmg bought a call the 20 mva -4.10,unusable,1,-,Falta de direccionalidad clara.
+159601021,DIS,"[""DIS""]",2019-04-04,"dis, always nice to see a stock you own taking a little peak above resistance. analyst target of 142 by eoy got some attention.",neutral,1,texto,Reclasificado: forzado desde unusable
+1467558,CMG,"[""CMG""]",2010-06-07,cmg bought a call the 20 mva -4.10,bullish,1,texto,Reclasificado: forzado desde unusable
 256126082,DDOG,"[""DDOG""]",2020-11-12,ddog easiest short ever? longs were saved by a strong nasdaq yesterday. i sold at 112 a few weeks ago. initiated short position at the close yesterday.,neutral,3,texto,Informativo o pregunta sin inclinación.
-106290200,TGT,"[""BIG"", ""DLTR"", ""DSW"", ""FIVE"", ""HIBB"", ""KSS"", ""TGT"", ""W"", ""WMT""]",2017-12-23,wmt five dltr dsw hibb big tgtw kss,unusable,1,-,Falta de direccionalidad clara.
-41552347,DIS,"[""DIS""]",2015-08-19,dis the most insane fade ive seen ever. i am in shock. this market is broken,unusable,1,-,Falta de direccionalidad clara.
+106290200,TGT,"[""BIG"", ""DLTR"", ""DSW"", ""FIVE"", ""HIBB"", ""KSS"", ""TGT"", ""W"", ""WMT""]",2017-12-23,wmt five dltr dsw hibb big tgtw kss,neutral,1,texto,Reclasificado: forzado desde unusable
+41552347,DIS,"[""DIS""]",2015-08-19,dis the most insane fade ive seen ever. i am in shock. this market is broken,neutral,1,texto,Reclasificado: forzado desde unusable
 114614524,DIS,"[""BABA"", ""C"", ""DIS"", ""FB"", ""JPM"", ""QQQ"", ""SPY"", ""UNH"", ""WMT""]",2018-03-01,spy jpm baba fb dis unh c qqq wmt a few of buyingonweakness ahead of 1st on month mutual fund day.,bullish,2,texto,Inclinación alcista detectada.
-396107058,DDOG,"[""DDOG""]",2021-10-26,"ddog datadog announces network device monitoring to monitor any environment, anywhere 30 seconds delayed.",unusable,1,-,Falta de direccionalidad clara.
-468749290,DIS,"[""DIS""]",2022-06-28,dis joe wobbles,unusable,1,-,Falta de direccionalidad clara.
-266296205,CRWD,"[""ATY"", ""CRWD"", ""ETSY"", ""PYPL"", ""SHOP""]",2020-12-22,acuif crwd shop etsy pypl just made a ath,unusable,1,-,Falta de direccionalidad clara.
-459848861,DDOG,"[""DDOG""]",2022-05-16,ddog subprime option pricing,unusable,1,-,Falta de direccionalidad clara.
+396107058,DDOG,"[""DDOG""]",2021-10-26,"ddog datadog announces network device monitoring to monitor any environment, anywhere 30 seconds delayed.",neutral,1,texto,Reclasificado: forzado desde unusable
+468749290,DIS,"[""DIS""]",2022-06-28,dis joe wobbles,neutral,1,texto,Reclasificado: forzado desde unusable
+266296205,CRWD,"[""ATY"", ""CRWD"", ""ETSY"", ""PYPL"", ""SHOP""]",2020-12-22,acuif crwd shop etsy pypl just made a ath,neutral,1,texto,Reclasificado: forzado desde unusable
+459848861,DDOG,"[""DDOG""]",2022-05-16,ddog subprime option pricing,neutral,1,texto,Reclasificado: forzado desde unusable
 188232655,CRWD,"[""CRWD""]",2019-12-27,crwd and back down lol,bearish,2,texto,Inclinación bajista detectada.
 257140568,DIS,"[""DIS""]",2020-11-17,how much upside does dis have left?,bullish,2,texto,Inclinación alcista detectada.
-11068495,DIS,"[""DIS""]",2012-12-18,harmongreg covered some dis here. will trail some..,unusable,1,-,Falta de direccionalidad clara.
-487158737,NCLH,"[""NCLH""]",2022-09-27,"sweep options activity nclh is the 22 ticker with sweep activity where institutions are trading options urgently with 5.0k sweep contracts, a leading indicator of market movement. market analysis and options contracts included in screenshot of dashboard from insiderfinance.io (link in profile - insiderfinance)",unusable,1,-,Falta de direccionalidad clara.
+11068495,DIS,"[""DIS""]",2012-12-18,harmongreg covered some dis here. will trail some..,neutral,1,texto,Reclasificado: forzado desde unusable
+487158737,NCLH,"[""NCLH""]",2022-09-27,"sweep options activity nclh is the 22 ticker with sweep activity where institutions are trading options urgently with 5.0k sweep contracts, a leading indicator of market movement. market analysis and options contracts included in screenshot of dashboard from insiderfinance.io (link in profile - insiderfinance)",neutral,1,texto,Reclasificado: forzado desde unusable
 374726935,CRWD,"[""CRWD""]",2021-08-31,"crwd new press release crowdstrike to participate in upcoming investor conference crowdstrike holdings, inc. (nasdaq crwd) today announced that it is scheduled to present at the following virtual investor conference deutsche bank 2021 technology conference thursday, september 9, 2021 presentation time 10 10 a.m. pdt the presentation will be webcast live and archived on crowdstrike s investor relations website at ir.crowdstrike.com. about crowdstrike holdings crowdstrike provides cloud-delivered endpoint and cloud workload protection. leveraging artificial intelligence (ai) (...)",bullish,2,texto,Inclinación alcista detectada.
 153079414,CMG,"[""CMG""]",2019-02-07,cmg what s the short float on this thing? take 2 or 3 days to cover,bearish,2,texto,Inclinación bajista detectada.
-216887714,CRWD,"[""CRWD"", ""LULU"", ""UBER"", ""WRTC"", ""WYNN""]",2020-06-03,watchlist 6 4 20 wrtc uber wynn crwd prepare for lulu er next thurs,unusable,1,-,Falta de direccionalidad clara.
+216887714,CRWD,"[""CRWD"", ""LULU"", ""UBER"", ""WRTC"", ""WYNN""]",2020-06-03,watchlist 6 4 20 wrtc uber wynn crwd prepare for lulu er next thurs,neutral,1,texto,Reclasificado: forzado desde unusable
 41098373,DIS,"[""AAPL"", ""DIS"", ""TWTR"", ""UWTI""]",2015-08-11,so jacked up to see twtr aapl dis uwti all my stocks up so i ran 5 miles after a 10 hour day !,bullish,2,texto,Inclinación alcista detectada.
 205948172,DDOG,"[""DDOG""]",2020-04-13,ddog upped to 2.5% - gs slapped a buy and 47 target on it. will add size in low 30s,bullish,2,texto,Inclinación alcista detectada.
-404795299,DIS,"[""DIS""]",2021-11-12,dis the markets were pricing in the next netflix so it s natural we go back to 90- 95 levels soon,unusable,1,-,Falta de direccionalidad clara.
+404795299,DIS,"[""DIS""]",2021-11-12,dis the markets were pricing in the next netflix so it s natural we go back to 90- 95 levels soon,neutral,1,texto,Reclasificado: forzado desde unusable
 238205896,DIS,"[""DIS""]",2020-08-21,i think dis needs some magic dust. bulls are not around.,bullish,2,texto,Inclinación alcista detectada.
-240445026,NCLH,"[""NCLH""]",2020-08-31,nclh oh... bleuhorseshoe,unusable,1,-,Falta de direccionalidad clara.
-121340827,CMG,"[""CMG""]",2018-04-26,cmg this will fly to 500 soon just catching a breath,unusable,1,-,Falta de direccionalidad clara.
+240445026,NCLH,"[""NCLH""]",2020-08-31,nclh oh... bleuhorseshoe,neutral,1,texto,Reclasificado: forzado desde unusable
+121340827,CMG,"[""CMG""]",2018-04-26,cmg this will fly to 500 soon just catching a breath,neutral,1,texto,Reclasificado: forzado desde unusable
 195013367,TGT,"[""TGT""]",2020-02-14,tgt ouch,unusable,3,-,Lista de tickers o sin contenido.
 370757888,DIS,"[""DIS""]",2021-08-20,dis trading at a 34.62 pe for 2022 earnings is a steal. cheap for a best-in-class entertainment brand and growth stock. undervalued below here.,bullish,2,texto,Inclinación alcista detectada.
 214345734,NCLH,"[""NCLH""]",2020-05-21,nclh don t miss out tomorrow we going to 15 for sure and up !!!!!,bullish,2,texto,Inclinación alcista detectada.
-150322757,TGT,"[""ABT"", ""AMGN"", ""BBBY"", ""BMY"", ""CVS"", ""KSS"", ""LB"", ""M"", ""PFE"", ""TGT"", ""WMT""]",2019-01-10,retail hit list companies that are getting slammed tgt lb wmt bbby m kss amgn bmy abt pfe cvs,unusable,1,-,Falta de direccionalidad clara.
+150322757,TGT,"[""ABT"", ""AMGN"", ""BBBY"", ""BMY"", ""CVS"", ""KSS"", ""LB"", ""M"", ""PFE"", ""TGT"", ""WMT""]",2019-01-10,retail hit list companies that are getting slammed tgt lb wmt bbby m kss amgn bmy abt pfe cvs,neutral,1,texto,Reclasificado: forzado desde unusable
 61486484,CMG,"[""CMG""]",2016-08-26,here s what 28 estimize analysts believe cmg will report for q3 2016 eps reporting 10 18 amc,neutral,3,texto,Informativo o pregunta sin inclinación.
-282902338,DDOG,"[""DDOG"", ""DOOZIO""]",2021-02-03,ddog damn that doozio - can't let that sheep thing go. hopefully it's giving ddog some endorphins to push higher.,unusable,1,-,Falta de direccionalidad clara.
-250113094,DIS,"[""DIS""]",2020-10-14,dis don t like how stock faded throughout day. streaming is admittedly great but park cruise business is no bueno.,unusable,1,-,Falta de direccionalidad clara.
+282902338,DDOG,"[""DDOG"", ""DOOZIO""]",2021-02-03,ddog damn that doozio - can't let that sheep thing go. hopefully it's giving ddog some endorphins to push higher.,neutral,1,texto,Reclasificado: forzado desde unusable
+250113094,DIS,"[""DIS""]",2020-10-14,dis don t like how stock faded throughout day. streaming is admittedly great but park cruise business is no bueno.,bullish,1,texto,Reclasificado: forzado desde unusable
 259598520,CRWD,"[""CRWD""]",2020-11-26,crwd - upcoming quarterly report is on 2nd of december 2020. latest variance is at 13.14,bullish,2,texto,Inclinación alcista detectada.
-200595075,NCLH,"[""NCLH""]",2020-03-16,nclh wont buy more until the 30 day shut down is up. they wont go bankrupt but i do imagine they will be utilizing the bailout,unusable,1,-,Falta de direccionalidad clara.
-146863380,TGT,"[""TGT""]",2018-12-03,tgt kaiser permanente planning to open more clinics inside stores across cali.,unusable,1,-,Falta de direccionalidad clara.
+200595075,NCLH,"[""NCLH""]",2020-03-16,nclh wont buy more until the 30 day shut down is up. they wont go bankrupt but i do imagine they will be utilizing the bailout,neutral,1,texto,Reclasificado: forzado desde unusable
+146863380,TGT,"[""TGT""]",2018-12-03,tgt kaiser permanente planning to open more clinics inside stores across cali.,neutral,1,texto,Reclasificado: forzado desde unusable
 185439402,DDOG,"[""DDOG""]",2019-12-02,"shortvolumes ddog does that portend a bear attack? once the bears start playing with this stock, we wont be puppies, this is a real company and deserves its valuation,",neutral,3,texto,Informativo o pregunta sin inclinación.
-440555921,CRWD,"[""CRWD""]",2022-03-02,"crowdstrike introduces the industry's first fully-managed identity threat protection solution, powered by falcon complete crwd",unusable,1,-,Falta de direccionalidad clara.
+440555921,CRWD,"[""CRWD""]",2022-03-02,"crowdstrike introduces the industry's first fully-managed identity threat protection solution, powered by falcon complete crwd",neutral,1,texto,Reclasificado: forzado desde unusable
 318017475,DDOG,"[""DDOG""]",2021-04-19,ddog insider ownership up 0.1% from 1.5% to 1.6%,bullish,2,texto,Inclinación alcista detectada.
 219213224,NCLH,"[""AAL"", ""BAC"", ""ET"", ""NCLH"", ""RCL""]",2020-06-11,bac et nclh aal rcl should i keep putting puts for tm?,bearish,2,jerga,Inclinación bajista detectada.
 169769944,CMG,"[""CMG"", ""SSYS"", ""TEO""]",2019-07-07,"bull flags detected by our stock screener in cmg, ssys and teo.",bullish,2,texto,Inclinación alcista detectada.
-154148695,DIS,"[""DIS""]",2019-02-18,dis you better take it in the on tuesday...,unusable,1,-,Falta de direccionalidad clara.
+154148695,DIS,"[""DIS""]",2019-02-18,dis you better take it in the on tuesday...,neutral,1,texto,Reclasificado: forzado desde unusable
 246424590,DDOG,"[""DDOG""]",2020-09-25,"fwsells ddog obstler david m, chief financial officer of datadog, inc. sold 35000 shares on 2020-09-23.",bearish,2,texto,Inclinación bajista detectada.
-149195023,DIS,"[""DIS"", ""DJIA"", ""SPY""]",2018-12-28,spy best performer today in the djia is disney. cqginc cqgthom dis,unusable,1,-,Falta de direccionalidad clara.
-184630836,DDOG,"[""DDOG""]",2019-11-21,ddog new article datadog announces security monitoring product shares 1.9% get all the latest ddog related news here,unusable,1,-,Falta de direccionalidad clara.
+149195023,DIS,"[""DIS"", ""DJIA"", ""SPY""]",2018-12-28,spy best performer today in the djia is disney. cqginc cqgthom dis,neutral,1,texto,Reclasificado: forzado desde unusable
+184630836,DDOG,"[""DDOG""]",2019-11-21,ddog new article datadog announces security monitoring product shares 1.9% get all the latest ddog related news here,neutral,1,texto,Reclasificado: forzado desde unusable
 174133374,TGT,"[""BABA"", ""LRCX"", ""MPC"", ""NVDA"", ""TGT""]",2019-08-14,top bullish flow (a o1 00pmest) tgt baba mpc lrcx nvda,bullish,2,texto,Inclinación alcista detectada.
-342225676,NCLH,"[""AMZN"", ""LCID"", ""NCLH"", ""NVAX"", ""VXRT""]",2021-06-10,"vxrt amzn cciv nclh nvax 1800 into 60k in the last 60 days.. if you really want to make huge profits on trading then, join this winning chat. tiny.one stocks1",unusable,1,-,Falta de direccionalidad clara.
-261849634,NCLH,"[""NCLH""]",2020-12-06,nclh - next fiscal quarter end is on 31st of december 2020. overlap analysis alert,unusable,1,-,Falta de direccionalidad clara.
-87758338,DIS,"[""DIS""]",2017-07-03,dis i'd like disney much better if espn wasn't so god awful! they've turned espn into a liberal political sh!t show that is unwatchable.,unusable,1,-,Falta de direccionalidad clara.
+342225676,NCLH,"[""AMZN"", ""LCID"", ""NCLH"", ""NVAX"", ""VXRT""]",2021-06-10,"vxrt amzn cciv nclh nvax 1800 into 60k in the last 60 days.. if you really want to make huge profits on trading then, join this winning chat. tiny.one stocks1",neutral,1,texto,Reclasificado: forzado desde unusable
+261849634,NCLH,"[""NCLH""]",2020-12-06,nclh - next fiscal quarter end is on 31st of december 2020. overlap analysis alert,neutral,1,texto,Reclasificado: forzado desde unusable
+87758338,DIS,"[""DIS""]",2017-07-03,dis i'd like disney much better if espn wasn't so god awful! they've turned espn into a liberal political sh!t show that is unwatchable.,neutral,1,texto,Reclasificado: forzado desde unusable
 411117151,NCLH,"[""BFRI"", ""NAKD"", ""NCLH"", ""NRXP""]",2021-11-29,"thinking about buying stock in naked brand, nrx pharmaceuticals, biofrontera, norwegian cruise line, or twitter? bfri nakd nclh nrxp",bullish,2,texto,Inclinación alcista detectada.
 181077050,CRWD,"[""AYX"", ""COUP"", ""CRWD"", ""ESTC"", ""MDB"", ""OKTA"", ""SHOP"", ""SMAR"", ""TTD"", ""TWLO"", ""ZM"", ""ZS""]",2019-10-22,ayx crwd okta mdb zs ttd zm smar ddogg twlo shop coup estc when did the cloud sector get taken over by the mob?,bullish,2,texto,Inclinación alcista detectada.
 491528316,DDOG,"[""DDOG"", ""NET""]",2022-10-21,which stock is the best to invest in? compare ddog vs. net.,neutral,3,texto,Informativo o pregunta sin inclinación.
@@ -81,71 +81,71 @@
 7378980,CMG,"[""CMG""]",2012-03-23,"cmg is down today for a change, but it usu. comes back last hour or so of trading, but we'll see.",bearish,2,texto,Inclinación bajista detectada.
 389507040,NCLH,"[""CCL"", ""NCLH""]",2021-10-10,ccl nclh so looks like everyone is sure cruise stocks will be down again tomorrow morning. what are the chances they do the opposite?,bearish,2,texto,Inclinación bajista detectada.
 403314249,DDOG,"[""DDOG""]",2021-11-09,ddog up 4 days in a row 162.77 166.95 185.56 191.35 195.19,bullish,2,texto,Inclinación alcista detectada.
-482114085,CRWD,"[""BAC"", ""BRISE-X"", ""CRWD"", ""MGAM"", ""SNAP""]",2022-08-31,snap mgam brise.x crwd bac charting - stock scanning - real-time alerts - backtesting artificial intelligence - entry exit signals - performance tracking simulated trading - live trading - risk analysis - market breadth news - cloud storage - education - free trading room website in profile post - 7,unusable,1,-,Falta de direccionalidad clara.
-33017196,TGT,"[""TGT""]",2015-02-23,tgt target lowers free shipping minimum to 25 for online orders,unusable,1,-,Falta de direccionalidad clara.
+482114085,CRWD,"[""BAC"", ""BRISE-X"", ""CRWD"", ""MGAM"", ""SNAP""]",2022-08-31,snap mgam brise.x crwd bac charting - stock scanning - real-time alerts - backtesting artificial intelligence - entry exit signals - performance tracking simulated trading - live trading - risk analysis - market breadth news - cloud storage - education - free trading room website in profile post - 7,neutral,1,texto,Reclasificado: forzado desde unusable
+33017196,TGT,"[""TGT""]",2015-02-23,tgt target lowers free shipping minimum to 25 for online orders,neutral,1,texto,Reclasificado: forzado desde unusable
 102684853,DIS,"[""DIS""]",2017-11-27,"dis payout ratio for divi only at around 25% (1.5 of 6 eps), wouldnt be surprised to see increase, hopefully will have nike bounce",bullish,2,texto,Inclinación alcista detectada.
 410943738,DDOG,"[""DDOG""]",2021-11-29,ddog simulated 185.0 dollar calls for monday's open on stockorbit.,bullish,2,jerga,Inclinación alcista detectada.
 196509683,DDOG,"[""DDOG"", ""DEAC"", ""NET""]",2020-02-25,"all kidding aside, definitely watch to see what holds up. tickers like net ddog deac have held up pretty well.",bullish,2,texto,Inclinación alcista detectada.
 170632635,TGT,"[""FB"", ""TGT""]",2019-07-16,fb tgt,unusable,3,-,Lista de tickers o sin contenido.
-484106162,NCLH,"[""BB"", ""CCL"", ""GILD"", ""LVS"", ""NCLH""]",2022-09-10,"ccl bouncing off 2020 low monthly weekly technical analysis of bb, gild, lvs, nclh",unusable,1,-,Falta de direccionalidad clara.
+484106162,NCLH,"[""BB"", ""CCL"", ""GILD"", ""LVS"", ""NCLH""]",2022-09-10,"ccl bouncing off 2020 low monthly weekly technical analysis of bb, gild, lvs, nclh",bearish,1,texto,Reclasificado: forzado desde unusable
 408666181,NCLH,"[""NCLH""]",2021-11-22,nclh norwegian cruise line holdings ltd. completes strategic balance sheet optimization transactions 45 seconds delayed.,bullish,2,texto,Inclinación alcista detectada.
-193368358,DIS,"[""AAPL"", ""AMZN"", ""CMG"", ""DIS"", ""MSFT"", ""TSLA""]",2020-02-04,cmg dis aapl msft amzn tsla witty and informative 5 min morning brew read. from wall street to tech world.,unusable,1,-,Falta de direccionalidad clara.
+193368358,DIS,"[""AAPL"", ""AMZN"", ""CMG"", ""DIS"", ""MSFT"", ""TSLA""]",2020-02-04,cmg dis aapl msft amzn tsla witty and informative 5 min morning brew read. from wall street to tech world.,neutral,1,texto,Reclasificado: forzado desde unusable
 101136479,DIS,"[""DIS""]",2017-11-11,here s what 61 estimize analysts believe dis will report for q1 2018 revenue reporting 02 06 amc,neutral,3,texto,Informativo o pregunta sin inclinación.
-460399319,TGT,"[""TGT""]",2022-05-18,tgt wet fart at the bell,unusable,1,-,Falta de direccionalidad clara.
-269454803,DIS,"[""AAPL"", ""AMZN"", ""DIS"", ""MSFT"", ""WFC""]",2021-01-04,aapl amzn msft wfc dis all gave 100 % gain on alerts ! we were bearish at start of day and we have long term spy 350 put too !!,unusable,1,-,Falta de direccionalidad clara.
-29099311,CMG,"[""CMG""]",2014-11-11,"cmg looking to pop, and i'll be able to afford the extra charge to put guacamole on everything.",unusable,1,-,Falta de direccionalidad clara.
+460399319,TGT,"[""TGT""]",2022-05-18,tgt wet fart at the bell,neutral,1,texto,Reclasificado: forzado desde unusable
+269454803,DIS,"[""AAPL"", ""AMZN"", ""DIS"", ""MSFT"", ""WFC""]",2021-01-04,aapl amzn msft wfc dis all gave 100 % gain on alerts ! we were bearish at start of day and we have long term spy 350 put too !!,neutral,1,texto,Reclasificado: forzado desde unusable
+29099311,CMG,"[""CMG""]",2014-11-11,"cmg looking to pop, and i'll be able to afford the extra charge to put guacamole on everything.",bearish,1,texto,Reclasificado: forzado desde unusable
 193419493,CMG,"[""CMG""]",2020-02-05,cmg all i wanted was a year of free burritos. now if i can exit with a profit my dream will be reality as i am currently up about 1000. that s like 100 lunches.,bullish,2,texto,Inclinación alcista detectada.
-222901856,CMG,"[""CMG""]",2020-06-25,cmg accidentally made money,unusable,1,-,Falta de direccionalidad clara.
+222901856,CMG,"[""CMG""]",2020-06-25,cmg accidentally made money,neutral,1,texto,Reclasificado: forzado desde unusable
 49457148,DIS,"[""DIS""]",2016-02-09,dis that was a good short 95,bearish,2,texto,Inclinación bajista detectada.
-501029248,DDOG,"[""DDOG""]",2022-12-12,"ddog new article why mongodb, datadog, and twilio rallied today",unusable,1,-,Falta de direccionalidad clara.
-415866280,DIS,"[""DIS""]",2021-12-10,dis the cramer curse,unusable,1,-,Falta de direccionalidad clara.
-171135670,CRWD,"[""CRWD""]",2019-07-19,crwd 90 eod,unusable,1,-,Falta de direccionalidad clara.
-61114770,CMG,"[""CMG""]",2016-08-22,cmg chipotle needs to dump cash on investors now -,unusable,1,-,Falta de direccionalidad clara.
+501029248,DDOG,"[""DDOG""]",2022-12-12,"ddog new article why mongodb, datadog, and twilio rallied today",neutral,1,texto,Reclasificado: forzado desde unusable
+415866280,DIS,"[""DIS""]",2021-12-10,dis the cramer curse,neutral,1,texto,Reclasificado: forzado desde unusable
+171135670,CRWD,"[""CRWD""]",2019-07-19,crwd 90 eod,neutral,1,texto,Reclasificado: forzado desde unusable
+61114770,CMG,"[""CMG""]",2016-08-22,cmg chipotle needs to dump cash on investors now -,neutral,1,texto,Reclasificado: forzado desde unusable
 187880671,DIS,"[""DIS"", ""SBUX""]",2019-12-23,dis sbux these two continue to be ridiculous in a market that is melting up.,bullish,2,texto,Inclinación alcista detectada.
-175921972,CRWD,"[""CRWD""]",2019-08-30,crwd and broke. god damn,unusable,1,-,Falta de direccionalidad clara.
+175921972,CRWD,"[""CRWD""]",2019-08-30,crwd and broke. god damn,neutral,1,texto,Reclasificado: forzado desde unusable
 235766197,NCLH,"[""NCLH""]",2020-08-12,nclh do you ding dongs not get what s happening here? who goes on cruises? old people. who is most at risk for corona? old people. who is dumping money into a dumpster fire? bulls.,bullish,2,texto,Inclinación alcista detectada.
 49885195,CMG,"[""CMG"", ""EXPE"", ""FB"", ""TSLA""]",2016-02-18,fb tsla cmg expe nice. short is working on expe. didn't get to catch the others.,bearish,2,texto,Inclinación bajista detectada.
 397571132,CRWD,"[""CRWD"", ""OKTA"", ""S"", ""ZS""]",2021-10-28,okta not getting enough love from jim cramer! i'm long but my other cyber security positions are doing much better crwd zs s,bullish,2,texto,Inclinación alcista detectada.
-211091254,NCLH,"[""NCLH""]",2020-05-07,"nclh hype day. tomorrow will be down again into early 11s, maybe might touch 10.80. dont listen to fools saying going up.",unusable,1,-,Falta de direccionalidad clara.
-236124720,DDOG,"[""DDOG""]",2020-08-13,ddog boom boom,unusable,1,-,Falta de direccionalidad clara.
-467994144,CRWD,"[""CRWD""]",2022-06-23,"crwd new insights just appeared 1. sec form 4 henry shawn converted options into 3,125 shares and sold 1,437,875 worth of shares (8,713 units at 165.03), decreasing direct ownership by 3% to 185,584 units (tax liability) 2. sec form 4 austin roxanne s converted options into 5,781 shares, increasing direct ownership by 21% to 33,330 units 3. sec form 4 podbere burt w. converted options into 3,125 shares and sold 1,889,753 worth of shares (11,438 units at 165.22), decreasing direct ownership by 3% to 313,028 units to cover taxes edpservices technology",unusable,1,-,Falta de direccionalidad clara.
+211091254,NCLH,"[""NCLH""]",2020-05-07,"nclh hype day. tomorrow will be down again into early 11s, maybe might touch 10.80. dont listen to fools saying going up.",bearish,1,texto,Reclasificado: forzado desde unusable
+236124720,DDOG,"[""DDOG""]",2020-08-13,ddog boom boom,neutral,1,texto,Reclasificado: forzado desde unusable
+467994144,CRWD,"[""CRWD""]",2022-06-23,"crwd new insights just appeared 1. sec form 4 henry shawn converted options into 3,125 shares and sold 1,437,875 worth of shares (8,713 units at 165.03), decreasing direct ownership by 3% to 185,584 units (tax liability) 2. sec form 4 austin roxanne s converted options into 5,781 shares, increasing direct ownership by 21% to 33,330 units 3. sec form 4 podbere burt w. converted options into 3,125 shares and sold 1,889,753 worth of shares (11,438 units at 165.22), decreasing direct ownership by 3% to 313,028 units to cover taxes edpservices technology",neutral,1,texto,Reclasificado: forzado desde unusable
 226528551,DDOG,"[""DDOG""]",2020-07-09,ddog up 3 days in a row 88.96 90.09 96.13 96.38,bullish,2,texto,Inclinación alcista detectada.
 185426174,TGT,"[""AMZN"", ""DIS"", ""PRTY"", ""TGT""]",2019-12-01,prty disney frozen is super crazy overseas. party city is killing it. party city also manufactures and supplies all things disney to amazon and target walmart as well. dis amzn tgt,bullish,2,texto,Inclinación alcista detectada.
-390917213,DDOG,"[""DDOG""]",2021-10-14,ddog just in - new data and price prediction is out now for datadog inc,unusable,1,-,Falta de direccionalidad clara.
-209034622,TGT,"[""TGT""]",2020-04-28,tgt 22 % growth potential this years !,unusable,1,-,Falta de direccionalidad clara.
+390917213,DDOG,"[""DDOG""]",2021-10-14,ddog just in - new data and price prediction is out now for datadog inc,neutral,1,texto,Reclasificado: forzado desde unusable
+209034622,TGT,"[""TGT""]",2020-04-28,tgt 22 % growth potential this years !,bullish,1,texto,Reclasificado: forzado desde unusable
 113511468,NCLH,"[""BHP"", ""NCLH"", ""ROKU"", ""STMP""]",2018-02-20,"roku, bhp billiton lead 4 stocks in bullish bases with earnings due bhp roku nclh stmp",bullish,2,texto,Inclinación alcista detectada.
 349794753,DIS,"[""DIS""]",2021-06-28,dis,unusable,3,-,Lista de tickers o sin contenido.
-413750853,CRWD,"[""CRWD""]",2021-12-05,sweepcast alerted crwd with unusual options activity alerted on 210 put expiring 12-17-2021 worth 42k check out sweepcast.com,unusable,1,-,Falta de direccionalidad clara.
-212188854,DDOG,"[""DDOG""]",2020-05-12,ddog 200 in due time,unusable,1,-,Falta de direccionalidad clara.
+413750853,CRWD,"[""CRWD""]",2021-12-05,sweepcast alerted crwd with unusual options activity alerted on 210 put expiring 12-17-2021 worth 42k check out sweepcast.com,bearish,1,texto,Reclasificado: forzado desde unusable
+212188854,DDOG,"[""DDOG""]",2020-05-12,ddog 200 in due time,neutral,1,texto,Reclasificado: forzado desde unusable
 255920745,DDOG,"[""DDOG""]",2020-11-11,ddog downward dog!!,bearish,2,texto,Inclinación bajista detectada.
-468153611,NCLH,"[""NCLH""]",2022-06-24,nclh i sold these contracts for 550 profit where today it would have been over 1600! only if i held them for 1 more week lol. don t be a paper handed little b ch like me,unusable,1,-,Falta de direccionalidad clara.
-175027991,DIS,"[""CI"", ""DIS"", ""ETR""]",2019-08-22,"risk-adjusted landscape for cigna(ci), entergy(etr), disney(dis), freeport insidertrading stocks fintechnews",unusable,1,-,Falta de direccionalidad clara.
+468153611,NCLH,"[""NCLH""]",2022-06-24,nclh i sold these contracts for 550 profit where today it would have been over 1600! only if i held them for 1 more week lol. don t be a paper handed little b ch like me,bullish,1,texto,Reclasificado: forzado desde unusable
+175027991,DIS,"[""CI"", ""DIS"", ""ETR""]",2019-08-22,"risk-adjusted landscape for cigna(ci), entergy(etr), disney(dis), freeport insidertrading stocks fintechnews",neutral,1,texto,Reclasificado: forzado desde unusable
 473917154,TGT,"[""AMZN"", ""TGT"", ""WMT""]",2022-07-26,"sampletrades today is a great opportunity to further explain my approach. two of my top 4 got hit hard today. tgt amzn are -4% w wmt. so, should i ad, bail, or hold? both are still above basis (tgt roughly 6%, amzn roughly 11% in my pa) and near the low-end of my linear risk range. i ll choose o wait for the opportunity to lower my basis build my position instead of taking tiny gains at this stage of the game. it may lower my end of year target, but unless thing have materially changed, i m doubtful they will immediately fall out of favor for me. i will know more after my next update. i remain long at leg one, seeking a leg two basis improvement opportunity in both. otherwise, both remain a high quality problem for now. respect live2learn",bullish,2,texto,Inclinación alcista detectada.
 280330369,CRWD,"[""AMC"", ""BB"", ""CRWD"", ""GME"", ""PLTR""]",2021-01-29,bb amc gme pltr crwd keep bb up today and wallstreet loses millions! dont let the criminals win,bullish,2,texto,Inclinación alcista detectada.
-78953442,CMG,"[""CMG""]",2017-03-31,cmg losing steam,unusable,1,-,Falta de direccionalidad clara.
+78953442,CMG,"[""CMG""]",2017-03-31,cmg losing steam,neutral,1,texto,Reclasificado: forzado desde unusable
 198876767,DIS,"[""DIS""]",2020-03-08,dis take advantage of the pop after streaming numbers and sensor tower confirmed download news comes in,bearish,2,texto,Inclinación bajista detectada.
 45599821,CMG,"[""BKNG"", ""CMG"", ""TSLA""]",2015-11-18,cmg pcln tsla rolling?,neutral,3,texto,Informativo o pregunta sin inclinación.
-437954719,CMG,"[""CMG"", ""OCGN"", ""ZEN""]",2022-02-21,"ocgn took profit from zen and cmg last week, will throw 5,000 to ocgn tuesday morning first thing!!! i'm a big fan of bio stock!!!",unusable,1,-,Falta de direccionalidad clara.
-159750074,CMG,"[""CMG""]",2019-04-05,"cmg when if the out break makes headlines over weekend, should open on mon -10%",unusable,1,-,Falta de direccionalidad clara.
+437954719,CMG,"[""CMG"", ""OCGN"", ""ZEN""]",2022-02-21,"ocgn took profit from zen and cmg last week, will throw 5,000 to ocgn tuesday morning first thing!!! i'm a big fan of bio stock!!!",bullish,1,texto,Reclasificado: forzado desde unusable
+159750074,CMG,"[""CMG""]",2019-04-05,"cmg when if the out break makes headlines over weekend, should open on mon -10%",neutral,1,texto,Reclasificado: forzado desde unusable
 475905380,DDOG,"[""DDOG""]",2022-08-04,ddog earnings season still underway - additional details at itsallaboutheoptions.com private chat or st premium room,neutral,3,texto,Informativo o pregunta sin inclinación.
-219504132,NCLH,"[""NCLH""]",2020-06-12,nclh dips are getting eaten alive!!!,unusable,1,-,Falta de direccionalidad clara.
-459445336,DDOG,"[""DDOG""]",2022-05-13,"ddog sec form 4 acocella kerry sold 206,260 worth of shares (2,044 units at 100.91), decreasing direct ownership by 4% to 45,071 units 45 seconds delayed.",unusable,1,-,Falta de direccionalidad clara.
-414415665,CRWD,"[""CRWD""]",2021-12-07,crwd new survey shows growing crisis of trust with microsoft and legacy it vendors,unusable,1,-,Falta de direccionalidad clara.
+219504132,NCLH,"[""NCLH""]",2020-06-12,nclh dips are getting eaten alive!!!,neutral,1,texto,Reclasificado: forzado desde unusable
+459445336,DDOG,"[""DDOG""]",2022-05-13,"ddog sec form 4 acocella kerry sold 206,260 worth of shares (2,044 units at 100.91), decreasing direct ownership by 4% to 45,071 units 45 seconds delayed.",neutral,1,texto,Reclasificado: forzado desde unusable
+414415665,CRWD,"[""CRWD""]",2021-12-07,crwd new survey shows growing crisis of trust with microsoft and legacy it vendors,neutral,1,texto,Reclasificado: forzado desde unusable
 320446632,DDOG,"[""DDOG""]",2021-04-23,ddog,unusable,3,-,Lista de tickers o sin contenido.
-280723125,DDOG,"[""CDE"", ""DDOG""]",2021-01-30,cde ddog building a nice looking breakout base,unusable,1,-,Falta de direccionalidad clara.
-243936397,DDOG,"[""CAT"", ""DDOG"", ""ETON"", ""PTON"", ""SPG""]",2020-09-15,"eton cat spg ddog pton started with 4k, down to 1k, back up to 35k. big thanks to this community for alerts. stockmarketwatcher.net ..",unusable,1,-,Falta de direccionalidad clara.
+280723125,DDOG,"[""CDE"", ""DDOG""]",2021-01-30,cde ddog building a nice looking breakout base,neutral,1,texto,Reclasificado: forzado desde unusable
+243936397,DDOG,"[""CAT"", ""DDOG"", ""ETON"", ""PTON"", ""SPG""]",2020-09-15,"eton cat spg ddog pton started with 4k, down to 1k, back up to 35k. big thanks to this community for alerts. stockmarketwatcher.net ..",neutral,1,texto,Reclasificado: forzado desde unusable
 437631270,DDOG,"[""DDOG""]",2022-02-18,ddog green to red move 1.24% to -4.09%,bullish,2,texto,Inclinación alcista detectada.
 216583062,CRWD,"[""CRWD""]",2020-06-02,crwd investors will be dumping zm tomorrow to buy crwd. this company is the real deal. signature av is dead. ai is the future.,bullish,2,texto,Inclinación alcista detectada.
-185960166,CRWD,"[""CRWD""]",2019-12-05,crwd they beat everything,unusable,1,-,Falta de direccionalidad clara.
-200727528,NCLH,"[""CCL"", ""DJIA"", ""NCLH"", ""SPCE"", ""SPY""]",2020-03-16,"spce ccl nclh we are heading into a recession, 6 months out, the virus is out of control. trump--. market gone. djia spy",unusable,1,-,Falta de direccionalidad clara.
-57587832,CMG,"[""CMG""]",2016-06-29,cmg back to prebrexit level,unusable,1,-,Falta de direccionalidad clara.
+185960166,CRWD,"[""CRWD""]",2019-12-05,crwd they beat everything,bullish,1,texto,Reclasificado: forzado desde unusable
+200727528,NCLH,"[""CCL"", ""DJIA"", ""NCLH"", ""SPCE"", ""SPY""]",2020-03-16,"spce ccl nclh we are heading into a recession, 6 months out, the virus is out of control. trump--. market gone. djia spy",neutral,1,texto,Reclasificado: forzado desde unusable
+57587832,CMG,"[""CMG""]",2016-06-29,cmg back to prebrexit level,neutral,1,texto,Reclasificado: forzado desde unusable
 210537507,NCLH,"[""NCLH""]",2020-05-05,nclh bears can laugh all you want!!! see who will be laughing when people start going on cruises they will need to fly to get to destinations. people are not going to be held prisoner in their homes watching netflix the rest of their lives and running to the grocery store looking for toilet paper...lmao...go back in the basement bears!!!!!,bearish,2,texto,Inclinación bajista detectada.
 209412165,NCLH,"[""NCLH""]",2020-04-29,nclh wooo puts gonna be cheap tomorrow,bearish,2,jerga,Inclinación bajista detectada.
 399517866,CRWD,"[""BB"", ""CRWD"", ""TSLA""]",2021-11-02,bb trying to hold us down but lfg crwd tsla,bearish,2,texto,Inclinación bajista detectada.
 44922452,DIS,"[""DIS""]",2015-11-04,"dis dont be scared, load up.",bullish,2,texto,Inclinación alcista detectada.
-443171625,DDOG,"[""DDOG""]",2022-03-11,"ddog 15s. delayed filed sec form 4 director jacobson matthew acquired 3,638,825 of class a common stock at average price 0 on 2022-",unusable,1,-,Falta de direccionalidad clara.
+443171625,DDOG,"[""DDOG""]",2022-03-11,"ddog 15s. delayed filed sec form 4 director jacobson matthew acquired 3,638,825 of class a common stock at average price 0 on 2022-",neutral,1,texto,Reclasificado: forzado desde unusable
 356544488,DIS,"[""DIS""]",2021-07-15,dis future share price i love you 3000 disney -pixar-marvel -star wars -pj masks - muppets - coach partnership direct to consumer on- line e commerce to compete with amazon and etsy for the holidays . on top of parks and disney . i you 3000.00 n the future of madness .,bullish,2,texto,Inclinación alcista detectada.
 390796410,DDOG,"[""DDOG""]",2021-10-13,ddog option order flow sentiment is 69.9% bullish.,bullish,2,texto,Inclinación alcista detectada.
-256011590,DDOG,"[""DDOG""]",2020-11-11,ddog lookin good.,unusable,1,-,Falta de direccionalidad clara.
+256011590,DDOG,"[""DDOG""]",2020-11-11,ddog lookin good.,neutral,1,texto,Reclasificado: forzado desde unusable
 372309726,DDOG,"[""DDOG""]",2021-08-25,ddog simulated 137.0 dollar calls for wednesdays open on stockorbit at,bullish,2,jerga,Inclinación alcista detectada.
-8819222,CMG,"[""CMG""]",2012-07-25,bossmoney just hope it doesn't look like cmgi in the end cmg don't worry it won't ),unusable,1,-,Falta de direccionalidad clara.
+8819222,CMG,"[""CMG""]",2012-07-25,bossmoney just hope it doesn't look like cmgi in the end cmg don't worry it won't ),neutral,1,texto,Reclasificado: forzado desde unusable
