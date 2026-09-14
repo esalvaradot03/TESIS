@@ -63,3 +63,8 @@ data/**/*.csv
 
 # Logs del live_runner (Task Scheduler) — nunca se commitean
 logs/
+
+# Dashboard: el HTML final SÍ se versiona (es el entregable, autocontenido).
+# El paquete intermedio no: lo regenera dashboard/build_datos.py y su contenido
+# ya viaja incrustado dentro del HTML.
+dashboard/datos.json
