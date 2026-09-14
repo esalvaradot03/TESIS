@@ -1,0 +1,4 @@
+enfoque,n_eventos,rho_pre,rho_post,diferencia,ic95_bajo,ic95_alto,p_unilateral,remuestreos_validos,h2_se_sostiene
+finbert,55,-0.1696,0.4288,0.5984,0.3633,0.8154,0.0,10000,True
+probe,55,-0.072,0.4343,0.5063,0.2215,0.7671,0.0,10000,True
+vader,55,-0.1946,0.3489,0.5435,0.2381,0.8094,0.0004,10000,True
