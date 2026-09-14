@@ -1,6 +1,4 @@
 
----
-
 ## 1. Qué ya se corrió antes de este documento (y por lo tanto es exploratorio)
 
 Honestidad metodológica primero: los siguientes análisis **ya se ejecutaron y
