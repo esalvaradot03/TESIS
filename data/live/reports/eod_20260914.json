@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-09-14T23:56:47.839843+00:00",
+  "equity": 91150.77,
+  "last_equity": 93434.15555409712,
+  "cash": -37.02,
+  "buying_power": 255177.74,
+  "portfolio_value": 91150.77,
+  "day_pl": -1902.82,
+  "day_pl_pct": -0.0204,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "STX",
+      "qty": 112.592812983,
+      "avg_entry_price": 820.09,
+      "current_price": 809.89,
+      "market_value": 91187.793307,
+      "unrealized_pl": -1148.446692,
+      "unrealized_plpc": -0.01244
+    }
+  ]
+}
