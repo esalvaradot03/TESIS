@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-09-15T23:35:40.842397+00:00",
+  "equity": 87082.14,
+  "last_equity": 90662.12049845565,
+  "cash": -38.8,
+  "buying_power": 243783.42,
+  "portfolio_value": 87082.14,
+  "day_pl": -3708.55,
+  "day_pl_pct": -0.0409,
+  "n_positions": 4,
+  "positions": [
+    {
+      "symbol": "AXON",
+      "qty": 49.35058647,
+      "avg_entry_price": 439.92,
+      "current_price": 443.6015,
+      "market_value": 21891.994184,
+      "unrealized_pl": 181.684184,
+      "unrealized_plpc": 0.00837
+    },
+    {
+      "symbol": "CMG",
+      "qty": 614.153041018,
+      "avg_entry_price": 35.35,
+      "current_price": 34.7537,
+      "market_value": 21344.090542,
+      "unrealized_pl": -366.219458,
+      "unrealized_plpc": -0.01687
+    },
+    {
+      "symbol": "GS",
+      "qty": 22.526676765,
+      "avg_entry_price": 963.76,
+      "current_price": 976.56,
+      "market_value": 21998.651462,
+      "unrealized_pl": 288.341463,
+      "unrealized_plpc": 0.01328
+    },
+    {
+      "symbol": "OXY",
+      "qty": 344.881810961,
+      "avg_entry_price": 62.95,
+      "current_price": 63.46,
+      "market_value": 21886.199724,
+      "unrealized_pl": 175.889724,
+      "unrealized_plpc": 0.0081
+    }
+  ]
+}
