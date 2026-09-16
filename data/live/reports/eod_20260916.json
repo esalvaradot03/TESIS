@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-09-16T23:43:49.900445+00:00",
+  "equity": 87265.5,
+  "last_equity": 87077.0797136298,
+  "cash": -7.01,
+  "buying_power": 244334.98,
+  "portfolio_value": 87265.5,
+  "day_pl": -1854.02,
+  "day_pl_pct": -0.0213,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "ON",
+      "qty": 1287.205120481,
+      "avg_entry_price": 66.4,
+      "current_price": 67.8,
+      "market_value": 87272.507169,
+      "unrealized_pl": 1802.087169,
+      "unrealized_plpc": 0.02108
+    }
+  ]
+}
