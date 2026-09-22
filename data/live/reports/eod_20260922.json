@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-09-22T00:15:38.515951+00:00",
+  "equity": 91256.49,
+  "last_equity": 90071.60433126039,
+  "cash": -25.74,
+  "buying_power": 255487.29,
+  "portfolio_value": 91256.49,
+  "day_pl": 1170.08,
+  "day_pl_pct": 0.013,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "WBD",
+      "qty": 2963.708881578,
+      "avg_entry_price": 30.395857,
+      "current_price": 30.8,
+      "market_value": 91282.233553,
+      "unrealized_pl": 1197.762199,
+      "unrealized_plpc": 0.0133
+    }
+  ]
+}
