@@ -21,7 +21,7 @@ Fuentes:
     Sin los no etiquetados la clase neutral quedaría excluida por el filtro de
     origen y la comparación de enfoques sería circular.
   - **StockTwits en vivo** (opcional, `--include-live`): solo el stream
-    reciente, sin búsqueda histórica, y el sample cambia según cuándo se
+    reciente, sin búsqueda histórica, y la muestra cambia según cuándo se
     corra. Fuera del diseño pre-registrado.
 
 Diseño de muestreo (pre-registrado, SEED=42):
@@ -57,9 +57,24 @@ import numpy as np
 import pandas as pd
 
 from config.settings import DATA_DIR, SEED, STOCKTWITS_NYU_MESSAGES, STOCKTWITS_NYU_SYMBOL_SENTIMENTS
+from research.corpus_partition import (CorpusSchema, annotator_seed,
+                                       assign_to_annotators, batch_summary,
+                                       partition, sample_stratified,
+                                       scale_batches, sha256_file, sha256_pool)
 from src.sentiment.preprocessor import build_input_text, clean_text
 
 logger = logging.getLogger(__name__)
+
+# Esquema de este corpus para la maquinaria compartida de
+# research/corpus_partition.py: se anota un par (post, ticker objetivo); el
+# post es lo que no puede partirse entre lotes (dos pares del mismo texto en
+# train y test sería fuga); el ticker lleva las cuotas; el año estratifica.
+SCHEMA = CorpusSchema(
+    key=["post_id", "target_ticker"],
+    group="post_id",
+    klass="target_ticker",
+    stratum="year",
+)
 
 # Los 6 tickers del event study (decididos, no cambiar).
 TICKERS: list[str] = ["NCLH", "DIS", "CRWD", "TGT", "CMG", "DDOG"]
@@ -108,6 +123,9 @@ _OUTPUT_COLUMNS: list[str] = [
     "post_id", "target_ticker", "tickers_detectados", "fecha", "clean_text",
     "label", "confianza", "base", "nota",
 ]
+
+# Columnas que definen el contenido del pool, para su hash de trazabilidad.
+_HASH_COLUMNS: list[str] = ["post_id", "target_ticker", "fecha", "clean_text"]
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +184,7 @@ def _load_nyu_metadata(tickers: set[str], sentiments_dir: Path) -> pd.DataFrame:
 
 
 # Cashtags de cualquier símbolo (para tickers_detectados) y de los tickers del
-# estudio (para decidir si un mensaje sin etiqueta entra al pool). La regla se
+# estudio (para decidir si un message sin etiqueta entra al pool). La regla se
 # validó contra symbol_list en mensajes etiquetados: precisión y recall 100%
 # (3 archivos de messages/, 6.211 pares, sep-2026).
 _ANY_CASHTAG_RE = re.compile(r"\$([A-Za-z]{1,6}(?:[.\-][A-Za-z]{1,2})?)(?![A-Za-z0-9])")
@@ -402,7 +420,7 @@ def load_live_pairs(tickers: list[str], max_per_symbol: int = 60) -> pd.DataFram
 
     ADVERTENCIA metodológica: el endpoint público solo expone mensajes
     recientes, no búsqueda histórica, así que esta fuente concentra el
-    muestreo en el año en curso y el sample cambia según cuándo se corra.
+    muestreo en el año en curso y la muestra cambia según cuándo se corra.
 
     Args:
         tickers: Tickers a consultar.
@@ -413,7 +431,7 @@ def load_live_pairs(tickers: list[str], max_per_symbol: int = 60) -> pd.DataFram
     """
     logger.warning(
         "Fuente en vivo: stream RECIENTE de StockTwits, no histórico; "
-        "el sample deja de ser reproducible."
+        "la muestra deja de ser reproducible."
     )
     try:
         from src.sentiment.scraper_stocktwits import scrape
@@ -498,276 +516,13 @@ def build_pool(
 
 
 # ---------------------------------------------------------------------------
-# Muestreo estratificado por (ticker, año)
+# Escritura de los lotes
+#
+# El muestreo estratificado, la partición en lotes y el reparto entre
+# anotadores los hace research/corpus_partition.py (ver SCHEMA arriba), que es
+# la misma maquinaria que usa el corpus de prensa colombiana. Acá queda solo lo
+# propio de este corpus: qué columnas ve el anotador y el manifiesto.
 # ---------------------------------------------------------------------------
-
-def _largest_remainder(weights: dict, total: int, caps: dict) -> dict:
-    """
-    Reparte `total` unidades entre las llaves de `weights` proporcionalmente,
-    respetando el tope `caps` de cada llave (método del resto mayor).
-
-    Args:
-        weights: Peso relativo de cada llave (típicamente su disponibilidad).
-        total: Unidades a repartir.
-        caps: Tope por llave.
-
-    Returns:
-        Dict llave → unidades asignadas. La suma es min(total, sum(caps)).
-    """
-    total_weight = sum(weights.values())
-    if total <= 0 or total_weight <= 0:
-        return {k: 0 for k in weights}
-
-    exact = {k: total * w / total_weight for k, w in weights.items()}
-    alloc = {k: min(int(v), caps[k]) for k, v in exact.items()}
-
-    # El sobrante se reparte por parte fraccionaria descendente, saltando topes.
-    order = sorted(exact, key=lambda k: exact[k] - int(exact[k]), reverse=True)
-    while sum(alloc.values()) < total:
-        progressed = False
-        for key in order:
-            if sum(alloc.values()) >= total:
-                break
-            if alloc[key] < caps[key]:
-                alloc[key] += 1
-                progressed = True
-        if not progressed:  # todas las llaves llegaron a su tope
-            break
-    return alloc
-
-
-
-def allocate_by_cell(
-    pool: pd.DataFrame,
-    total: int = TOTAL_PAIRS,
-    min_per_ticker: int = MIN_PER_TICKER,
-    tickers: list[str] = TICKERS,
-    equal_quotas: bool = EQUAL_QUOTAS,
-) -> dict[tuple[str, int], int]:
-    """
-    Decide cuántos pares tomar de cada celda (ticker, año).
-
-    Primero garantiza `min_per_ticker` por ticker (repartido entre sus años),
-    y recién después reparte el resto proporcionalmente a la disponibilidad
-    de cada celda. Así un ticker con poca cobertura no queda fuera del corpus.
-
-    Args:
-        pool: Pool de build_pool().
-        total: Pares a muestrear en total.
-        min_per_ticker: Mínimo garantizado por ticker.
-        tickers: Universo de tickers.
-        equal_quotas: Si True, cada ticker recibe total / n_tickers pares
-            (`min_per_ticker` no aplica); el faltante de un ticker corto se
-            reporta y NO se rellena con otros. Si False, reparto con mínimo
-            `min_per_ticker` y el resto proporcional a la disponibilidad.
-
-    Returns:
-        Dict (ticker, año) → cantidad a muestrear.
-    """
-    available = pool.groupby(["target_ticker", "year"]).size().to_dict()
-    ticker_caps = {t: sum(n for (tk, _), n in available.items() if tk == t) for t in tickers}
-    ticker_caps = {t: n for t, n in ticker_caps.items() if n > 0}
-
-    missing = [t for t in tickers if t not in ticker_caps]
-    if missing:
-        logger.warning("Tickers sin ningún par en el pool: %s", missing)
-
-    if equal_quotas:
-        # Cuotas iguales sobre los tickers del estudio; el faltante no se rellena.
-        quota = _largest_remainder({t: 1 for t in tickers}, total, {t: total for t in tickers})
-        per_ticker = {t: min(quota[t], ticker_caps.get(t, 0)) for t in tickers}
-        short = {t: quota[t] - n for t, n in per_ticker.items() if n < quota[t]}
-        if short:
-            logger.warning("Tickers sin material para su cuota (faltante, no se rellena): %s", short)
-    else:
-        # 1) mínimo garantizado por ticker
-        base = {t: min(min_per_ticker, cap) for t, cap in ticker_caps.items()}
-        remaining = total - sum(base.values())
-        if remaining < 0:
-            raise ValueError(
-                f"El mínimo por ticker ({min_per_ticker} × {len(base)} tickers) supera "
-                f"el total pedido ({total})."
-            )
-        # 2) el resto, proporcional a la disponibilidad residual
-        residual = {t: ticker_caps[t] - base[t] for t in base}
-        extra = _largest_remainder(residual, remaining, residual)
-        per_ticker = {t: base[t] + extra.get(t, 0) for t in base}
-
-    # 3) dentro de cada ticker, repartir por año
-    cells: dict[tuple[str, int], int] = {}
-    for ticker, n_ticker in per_ticker.items():
-        year_caps = {y: n for (tk, y), n in available.items() if tk == ticker}
-        per_year = _largest_remainder(year_caps, n_ticker, year_caps)
-        for year, n_year in per_year.items():
-            if n_year > 0:
-                cells[(ticker, year)] = n_year
-    return cells
-
-
-def sample_stratified(
-    pool: pd.DataFrame,
-    total: int = TOTAL_PAIRS,
-    min_per_ticker: int = MIN_PER_TICKER,
-    tickers: list[str] = TICKERS,
-    seed: int = SEED,
-    equal_quotas: bool = EQUAL_QUOTAS,
-) -> pd.DataFrame:
-    """
-    Muestrea `total` pares estratificados por (ticker, año), con SEED fijo.
-
-    Args:
-        pool: Pool de build_pool().
-        total: Pares a muestrear.
-        min_per_ticker: Mínimo garantizado por ticker.
-        tickers: Universo de tickers.
-        seed: Semilla (SEED=42 del proyecto).
-        equal_quotas: Cuotas iguales por ticker (ver allocate_by_cell).
-
-    Returns:
-        DataFrame barajado con los pares seleccionados (columnas _POOL_COLUMNS).
-    """
-    if pool.empty:
-        return pool.copy()
-
-    cells = allocate_by_cell(pool, total, min_per_ticker, tickers, equal_quotas)
-    rng = np.random.default_rng(seed)
-
-    picked: list[int] = []
-    for (ticker, year), n_cell in sorted(cells.items()):
-        candidates = pool.index[
-            (pool["target_ticker"] == ticker) & (pool["year"] == year)
-        ].to_numpy()
-        picked.extend(rng.choice(candidates, size=n_cell, replace=False).tolist())
-
-    sample = pool.loc[picked].sample(frac=1, random_state=seed).reset_index(drop=True)
-    logger.info(
-        "Muestreo: %d pares de %d pedidos (%d celdas ticker×año).",
-        len(sample), total, len(cells),
-    )
-    return sample
-
-
-# ---------------------------------------------------------------------------
-# Partición en lotes y reparto entre anotadores
-# ---------------------------------------------------------------------------
-
-def partition(
-    sample: pd.DataFrame,
-    batches: dict[str, tuple[int, bool]] = _BATCHES,
-    batch_mins: dict[str, int] = _BATCH_MIN_PER_TICKER,
-    tickers: list[str] = TICKERS,
-) -> dict[str, pd.DataFrame]:
-    """
-    Corta el sample en los lotes l0 / doble / test / train, en ese orden.
-
-    Todos los pares de un mismo post_id van al mismo lote, para que el mismo
-    texto no quede a la vez en train y en test. Para cada lote, primero se
-    cubre su mínimo por ticker (`batch_mins`) con los primeros posts del
-    sample que lo satisfacen, y después se completa en el orden aleatorio
-    del sample con los posts que caben; el post que no cabe pasa al lote
-    siguiente, así los tamaños quedan exactos.
-
-    Args:
-        sample: Salida de sample_stratified() (ya barajada).
-        batches: Definición lote → (tamaño, compartido).
-        batch_mins: Mínimo de pares por ticker dentro de cada lote.
-        tickers: Tickers sobre los que aplica el mínimo.
-
-    Returns:
-        Dict lote → DataFrame.
-
-    Raises:
-        ValueError: si el sample no alcanza para cubrir los lotes o sus mínimos.
-    """
-    needed = sum(size for size, _ in batches.values())
-    if len(sample) < needed:
-        raise ValueError(
-            f"El sample tiene {len(sample)} pares pero los lotes requieren {needed}. "
-            "Ampliá el pool (montá D:\\trading-data\\ o acumulá más scraping) o "
-            "corré con --allow-partial para generar lotes proporcionales más chicos."
-        )
-
-    positions = sample.groupby("post_id").indices
-    pending = [positions[post_id] for post_id in pd.unique(sample["post_id"])]
-    ticker_of = sample["target_ticker"].to_numpy()
-
-    result: dict[str, pd.DataFrame] = {}
-    for name, (size, _) in batches.items():
-        taken = [False] * len(pending)
-        count = 0
-
-        # 1) mínimo por ticker del lote
-        minimum = batch_mins.get(name, 0)
-        for ticker in tickers if minimum else []:
-            have = sum(int((ticker_of[g] == ticker).sum()) for g, t in zip(pending, taken) if t)
-            for i, group in enumerate(pending):
-                if have >= minimum:
-                    break
-                if taken[i] or count + len(group) > size or not (ticker_of[group] == ticker).any():
-                    continue
-                taken[i] = True
-                count += len(group)
-                have += int((ticker_of[group] == ticker).sum())
-            if have < minimum:
-                raise ValueError(
-                    f"Lote '{name}': solo {have} pares de {ticker} disponibles (mínimo {minimum})."
-                )
-
-        # 2) el resto, en el orden aleatorio del sample
-        for i, group in enumerate(pending):
-            if count >= size:
-                break
-            if not taken[i] and count + len(group) <= size:
-                taken[i] = True
-                count += len(group)
-        if count < size:
-            raise ValueError(
-                f"No se pudo completar el lote '{name}' ({count}/{size}) sin partir posts."
-            )
-
-        chosen = [g for g, t in zip(pending, taken) if t]
-        result[name] = sample.iloc[np.concatenate(chosen)].reset_index(drop=True)
-        pending = [g for g, t in zip(pending, taken) if not t]
-    return result
-
-
-def assign_to_annotators(
-    batches: dict[str, pd.DataFrame],
-    definitions: dict[str, tuple[int, bool]] = _BATCHES,
-    annotators: list[str] = ANNOTATORS,
-) -> dict[tuple[str, str], pd.DataFrame]:
-    """
-    Reparte cada lote entre los anotadores.
-
-    Los lotes compartidos (l0, doble) van completos a ambos — son la base del
-    kappa. Los demás se parten en bloques disjuntos del mismo tamaño.
-
-    Args:
-        batches: Salida de partition().
-        definitions: Definición lote → (tamaño, compartido).
-        annotators: Nombres de los anotadores.
-
-    Returns:
-        Dict (lote, anotador) → DataFrame.
-    """
-    result: dict[tuple[str, str], pd.DataFrame] = {}
-    for name, frame in batches.items():
-        shared = definitions[name][1]
-        if shared:
-            for annotator in annotators:
-                result[(name, annotator)] = frame.copy()
-            continue
-        chunk = len(frame) // len(annotators)
-        for i, annotator in enumerate(annotators):
-            result[(name, annotator)] = frame.iloc[i * chunk: (i + 1) * chunk].reset_index(drop=True)
-    return result
-
-
-def _annotator_seed(seed: int, batch: str, annotator: str) -> int:
-    """Semilla determinista y distinta por (lote, anotador), derivada de `seed`."""
-    digest = hashlib.sha256(f"{seed}|{batch}|{annotator}".encode("utf-8")).digest()
-    return int.from_bytes(digest[:4], "big")
-
 
 def write_batches(
     assignments: dict[tuple[str, str], pd.DataFrame],
@@ -783,7 +538,7 @@ def write_batches(
     merge posterior (la llave es (post_id, target_ticker)).
 
     Args:
-        assignments: Salida de assign_to_annotators().
+        assignments: Salida de repartir_entre_anotadores().
         output_dir: Directorio de salida.
         seed: Semilla base.
 
@@ -794,7 +549,7 @@ def write_batches(
     written: dict[str, Path] = {}
 
     for (batch, annotator), frame in sorted(assignments.items()):
-        shuffled = frame.sample(frac=1, random_state=_annotator_seed(seed, batch, annotator))
+        shuffled = frame.sample(frac=1, random_state=annotator_seed(seed, batch, annotator))
         out = shuffled[["post_id", "target_ticker", "tickers_detectados", "fecha", "clean_text"]].copy()
         for column in ("label", "confianza", "base", "nota"):
             out[column] = ""
@@ -812,17 +567,6 @@ def write_batches(
 # Manifiesto de trazabilidad
 # ---------------------------------------------------------------------------
 
-def _sha256(path: Path) -> str:
-    """SHA-256 del contenido de un archivo."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def _pool_sha256(pool: pd.DataFrame) -> str:
-    """SHA-256 del pool, independiente del orden de filas (ordenado por la llave del par)."""
-    canon = pool[["post_id", "target_ticker", "fecha", "clean_text"]].sort_values(["post_id", "target_ticker"])
-    return hashlib.sha256(canon.to_csv(index=False).encode("utf-8")).hexdigest()
-
-
 def write_manifest(
     sample: pd.DataFrame,
     assignments: dict[tuple[str, str], pd.DataFrame],
@@ -838,7 +582,7 @@ def write_manifest(
     Args:
         sample: Pares muestreados.
         assignments: Reparto (lote, anotador) → filas.
-        written: Archivos escritos, para hashear.
+        written: Archivos written, para hashear.
         pool: Pool del que se muestreó (para registrar su tamaño por ticker).
         seed: Semilla usada.
         output_dir: Directorio de salida.
@@ -850,19 +594,6 @@ def write_manifest(
     for (ticker, year), count in sample.groupby(["target_ticker", "year"]).size().items():
         por_ticker_y_anio.setdefault(str(ticker), {})[str(year)] = int(count)
 
-    ids_por_lote: dict[str, dict[str, list[list[str]]]] = {}
-    por_lote_y_ticker: dict[str, dict[str, int]] = {}
-    for batch in _BATCHES:
-        frames = {a: assignments[(batch, a)] for a in ANNOTATORS if (batch, a) in assignments}
-        ids_por_lote[batch] = {
-            a: sorted([str(p), str(t)] for p, t in zip(f["post_id"], f["target_ticker"]))
-            for a, f in frames.items()
-        }
-        union = pd.concat(frames.values()).drop_duplicates(["post_id", "target_ticker"])
-        por_lote_y_ticker[batch] = {
-            str(t): int(n) for t, n in union["target_ticker"].value_counts().sort_index().items()
-        }
-
     manifest = {
         "generado": datetime.now(timezone.utc).isoformat(),
         "seed": seed,
@@ -870,7 +601,9 @@ def write_manifest(
         "min_por_ticker_sample": max(MIN_PER_TICKER, sum(_BATCH_MIN_PER_TICKER.values())),
         "min_por_ticker_por_lote": _BATCH_MIN_PER_TICKER,
         "reparto_test_train": "aleatorio (SEED), no por fecha",
-        "pool_sha256": _pool_sha256(pool) if pool is not None else None,
+        "pool_sha256": (
+            sha256_pool(pool, _HASH_COLUMNS, SCHEMA.key) if pool is not None else None
+        ),
         "unidad_de_muestreo": "(post_id, target_ticker)",
         "particion_agrupada_por_post": True,
         "fuente_nyu": (
@@ -890,27 +623,14 @@ def write_manifest(
             {str(t): int(n) for t, n in pool["target_ticker"].value_counts().sort_index().items()}
             if pool is not None else None
         ),
-        "lotes": {
-            batch: {
-                "pares": int(size),
-                "compartido": shared,
-                "por_anotador": {
-                    annotator: int(len(assignments[(batch, annotator)]))
-                    for annotator in ANNOTATORS
-                    if (batch, annotator) in assignments
-                },
-            }
-            for batch, (size, shared) in _BATCHES.items()
-        },
+        **batch_summary(assignments, _BATCHES, SCHEMA, ANNOTATORS),
         "por_ticker": {
             str(t): int(n) for t, n in sample["target_ticker"].value_counts().sort_index().items()
         },
         "por_ticker_y_anio": por_ticker_y_anio,
         "por_fuente": {str(s): int(n) for s, n in sample["source"].value_counts().items()},
-        "por_lote_y_ticker": por_lote_y_ticker,
-        "ids_por_lote": ids_por_lote,
         "archivos": {
-            name: {"filas": int(len(pd.read_csv(path, dtype=str))), "sha256": _sha256(path)}
+            name: {"filas": int(len(pd.read_csv(path, dtype=str))), "sha256": sha256_file(path)}
             for name, path in sorted(written.items())
         },
     }
@@ -977,11 +697,12 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    # El sample necesita al menos la suma de los mínimos por lote de cada ticker.
+    # La muestra necesita al menos la suma de los mínimos por lote de cada ticker.
     sample_min = max(args.min_per_ticker, sum(_BATCH_MIN_PER_TICKER.values()))
     equal_quotas = not args.proportional
     sample = sample_stratified(
-        pool, total=args.total, min_per_ticker=sample_min, equal_quotas=equal_quotas,
+        pool, SCHEMA, args.total, TICKERS, seed=SEED,
+        equal_quotas=equal_quotas, min_per_class=sample_min,
     )
 
     definitions = _BATCHES
@@ -993,15 +714,12 @@ if __name__ == "__main__":
             print(f"{message} Abortado para no romper el diseño pre-registrado. "
                   "Usá --allow-partial si querés lotes más chicos igual.")
             sys.exit(1)
-        scale = len(sample) / args.total
-        definitions = {
-            name: (max(1, int(size * scale)), shared) for name, (size, shared) in _BATCHES.items()
-        }
+        definitions = scale_batches(_BATCHES, len(sample), args.total)
         logger.warning("%s Se generan lotes proporcionales: %s", message,
                        {k: v[0] for k, v in definitions.items()})
 
-    batches = partition(sample, definitions)
-    assignments = assign_to_annotators(batches, definitions)
+    batches = partition(sample, SCHEMA, definitions, _BATCH_MIN_PER_TICKER, TICKERS)
+    assignments = assign_to_annotators(batches, definitions, ANNOTATORS)
     written = write_batches(assignments, args.output_dir)
     manifest_path = write_manifest(
         sample, assignments, written, pool=pool, output_dir=args.output_dir,
