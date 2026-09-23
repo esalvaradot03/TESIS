@@ -246,7 +246,24 @@ python -m src.evaluation.backtester
 > exportar `PYTHONIOENCODING=utf-8` antes de correr los módulos.
 
 ## Convenciones de código
-- Docstrings en español
+- **Idioma**: docstrings y comentarios en **español**; identificadores de
+  código (funciones, parámetros, variables, constantes) en **inglés**. Es el
+  estilo que ya tenía `src/` y `research/event_study/`; `research/colombia/` y
+  `research/corpus_partition.py` se alinearon a él en sep-2026.
+  - **Nombres de columna de datos**: se dejan como están, no se traducen. Son
+    el esquema de CSV y parquets ya generados (`post_id`, `target_ticker`,
+    `clean_text` en el event study; `article_id`, `emisor`, `titular`,
+    `fecha_publicacion` en el corpus colombiano). Renombrarlos invalidaría el
+    corpus etiquetado y rompería los módulos de `src/` que los leen.
+  - Los campos de un dataclass que se serializa a DataFrame **son** nombres de
+    columna: siguen esa regla, no la de los identificadores (ver
+    `IssuerMatch` en `research/colombia/emisores.py`).
+  - **Texto que lee un humano** (contenido de los reportes .md, mensajes de
+    log, `help` de argparse, flags de CLI): en español, como los docstrings.
+  - **Nunca** renombrar con una regex masiva. Pisa en silencio kwargs y
+    métodos de pandas/numpy/sklearn (`keep=`, `columns=`, `labels=`,
+    `.sample()`, `.head()`) y destroza la prosa de los docstrings; el error
+    aparece recién en runtime. Renombrar a mano y correr los pipelines.
 - Type hints en todas las funciones
 - Logging con módulo `logging` (no print)
 - Variables de entorno para API keys (.env, nunca hardcoded)
