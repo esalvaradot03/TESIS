@@ -127,6 +127,74 @@ python -m src.data.drive_sync --yes
 
 ---
 
+## 📰 Exports de EMIS (prensa colombiana)
+
+Los `.doc` de EMIS son la fuente del pivote colombiano. Drive es la fuente de
+verdad; Railway solo los baja y los parsea.
+
+### Cómo organizarlos en Drive
+
+Dentro de `TESIS/data/raw/emis/`, con una carpeta por emisor y, opcionalmente,
+una subcarpeta por año:
+
+```
+TESIS/data/raw/emis/
+├── ECOPETROL/2020/…  2021/…  2022/…
+├── CIBEST/2020/…
+├── GEB/…                    ← sin partir por año también vale
+├── GRUPOARGOS/…
+├── PFDAVVND/…
+└── nota_suelta.doc          ← documentos sueltos en la raíz
+```
+
+Los tres layouts conviven: la ingesta deduce emisor y año de la ruta. Un
+documento suelto entra al corpus igual, con `emisor_busqueda` vacío — el emisor
+lo decide la detección por alias. Los nombres de carpeta tienen que coincidir
+con los códigos de `research/colombia/emisores.py` (no importan mayúsculas); una
+carpeta con otro nombre se trata como documentos sueltos y queda avisado en el
+log y en el reporte.
+
+**La carpeta del año no manda sobre nada**: la fecha que usa el pipeline es la
+que trae el artículo. El año de carpeta se guarda solo para detectar archivos
+mal archivados, que el reporte de cobertura cuenta aparte.
+
+### Variables en Railway
+
+| Variable | Valor sugerido | Para qué |
+|---|---|---|
+| `DRIVE_SYNC_TARGETS` | `emis` (o `"processed models emis"`) | Baja los exports al arrancar |
+| `EMIS_RAW_ROOT` | `/app/trading-data/emis` | Los `.doc` van al **volumen**, no al checkout |
+| `EMIS_INTERIM_DIR` | `/app/trading-data/interim` | Los parquets también, para que sobrevivan al redeploy |
+| `EMIS_INGEST` | `auto` (default) | `auto` parsea solo si faltan los parquets; `force` reprocesa; `off` lo desactiva |
+
+`EMIS_RAW_ROOT` y `EMIS_INTERIM_DIR` apuntan al volumen a propósito: el
+checkout del repo es efímero y sin eso cada redeploy volvería a bajar los `.doc`
+de Drive y a reparsearlos. Las dos las resuelve `config/settings.py`, que es
+quien define las rutas del proyecto — `drive_sync` (dónde descarga) y la
+ingesta (dónde lee) importan de ahí, así que no pueden desincronizarse.
+
+### Ciclo de trabajo
+
+```bash
+# 1. Subís exports nuevos a Drive (a mano o con drive_upload)
+# 2. En Railway, una sola vez tras subirlos:
+EMIS_INGEST=force   # y redeploy; después volvelo a 'auto'
+```
+
+Sin `force`, el arranque reutiliza los parquets del volumen y no reparsea nada.
+Localmente es lo mismo sin variables:
+
+```powershell
+python -m src.data.drive_sync --only emis --yes
+python -m research.colombia.build_news_dataset
+```
+
+El tamaño no es problema acá: los exports de EMIS son HTML de unos pocos MB por
+archivo, así que caben de sobra en el volumen de Hobby (5 GB) — el límite de 80
+GB de arriba es del dataset de StockTwits, no de este.
+
+---
+
 ## 💰 Costos estimados
 
 | Escenario | Componentes | Total/mes |

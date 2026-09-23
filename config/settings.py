@@ -63,6 +63,21 @@ if _missing_external:
         len(_missing_external), len(_EXTERNAL_PATHS), ", ".join(_missing_external),
     )
 
+# --- Prensa colombiana (EMIS) — pivote 2020-2025 ---
+# Los exports de EMIS (.doc que son HTML) y los parquets que produce la
+# ingesta. Se definen ACÁ, y no en cada módulo, porque los escribe
+# `src/data/drive_sync.py` (target "emis") y los lee
+# `research/colombia/build_news_dataset.py`: si cada uno resolviera su propio
+# default, una descarga podría caer en una carpeta que la ingesta no mira y el
+# fallo sería silencioso.
+#
+# En Railway ambas apuntan al VOLUMEN montado, no al checkout del repo (que es
+# efímero y obligaría a rebajar los .doc en cada redeploy):
+#   EMIS_RAW_ROOT=/app/trading-data/emis
+#   EMIS_INTERIM_DIR=/app/trading-data/interim
+EMIS_RAW_ROOT: Path = Path(os.getenv("EMIS_RAW_ROOT", str(RAW_DIR / "emis")))
+EMIS_INTERIM_DIR: Path = Path(os.getenv("EMIS_INTERIM_DIR", str(DATA_DIR / "interim")))
+
 # --- Reproducibilidad ---
 SEED: int = int(os.getenv("SEED", "42"))
 
