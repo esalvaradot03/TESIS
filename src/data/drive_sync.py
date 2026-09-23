@@ -7,6 +7,7 @@ Uso (desde la raíz del proyecto con el venv activo):
     python -m src.data.drive_sync --only processed   # solo data/processed/
     python -m src.data.drive_sync --only models      # solo models/
     python -m src.data.drive_sync --only external    # solo datos-externos/
+    python -m src.data.drive_sync --only emis        # solo exports de EMIS
     python -m src.data.drive_sync --dry-run          # muestra qué descargaría
     python -m src.data.drive_sync --yes              # sin confirmación
 
@@ -15,6 +16,8 @@ Variables de entorno:
     GOOGLE_TOKEN_FILE        ruta al token.json         (default: token.json)
     TESIS_DATA_ROOT          destino datos externos     (default: D:/trading-data)
     DRIVE_FOLDER_NAME        nombre carpeta en Drive    (default: tesis-trading)
+    EMIS_RAW_ROOT            destino exports de EMIS    (default: data/raw/emis)
+    DRIVE_EMIS_SUBDIR        carpeta EMIS en Drive      (default: data/raw/emis)
 """
 
 from __future__ import annotations
@@ -26,6 +29,10 @@ import os
 import sys
 import time
 from pathlib import Path
+
+# Dueño de las rutas del proyecto: los destinos de EMIS salen de acá, no se
+# recalculan en este módulo (ver SYNC_TARGETS).
+from config.settings import EMIS_RAW_ROOT
 
 logger = logging.getLogger("drive_sync")
 
@@ -50,12 +57,21 @@ DRIVE_EXTERNAL_SUBDIR = os.getenv("DRIVE_EXTERNAL_SUBDIR", "trading-data")
 # Configurable por si prefieres el scope completo.
 SCOPES = [os.getenv("GOOGLE_DRIVE_SCOPE", "https://www.googleapis.com/auth/drive.readonly")]
 
+# Exports de EMIS (prensa colombiana). El destino NO se calcula acá: se importa
+# de config.settings, que es el dueño de las rutas del proyecto. Definirlo dos
+# veces ya provocó una vez que la descarga cayera en una carpeta que la ingesta
+# no lee (ROOT_DIR de este módulo apunta un nivel más arriba que el repo).
+# sync_folder es recursivo, así que la organización {EMISOR}/{AÑO}/ de Drive se
+# reproduce tal cual en disco, que es lo que espera build_news_dataset.
+DRIVE_EMIS_SUBDIR = os.getenv("DRIVE_EMIS_SUBDIR", "data/raw/emis")
+
 # Mapa: nombre_sección → (subcarpeta_en_drive, destino_local)
 SYNC_TARGETS = {
     "raw":       ("data/raw",              ROOT_DIR / "data" / "raw"),
     "processed": ("data/processed",        ROOT_DIR / "data" / "processed"),
     "models":    ("models",                ROOT_DIR / "models"),
     "external":  (DRIVE_EXTERNAL_SUBDIR,   EXTERNAL_DATA_ROOT),
+    "emis":      (DRIVE_EMIS_SUBDIR,       EMIS_RAW_ROOT),
 }
 
 
