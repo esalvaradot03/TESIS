@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-09-29T01:07:43.260950+00:00",
+  "equity": 88445.18,
+  "last_equity": 90308.15223096462,
+  "cash": -35.75,
+  "buying_power": 247603.6,
+  "portfolio_value": 88445.18,
+  "day_pl": -1400.95,
+  "day_pl_pct": -0.0155,
+  "n_positions": 3,
+  "positions": [
+    {
+      "symbol": "BA",
+      "qty": 154.93247654,
+      "avg_entry_price": 196.08,
+      "current_price": 185.48,
+      "market_value": 28736.875749,
+      "unrealized_pl": -1642.284251,
+      "unrealized_plpc": -0.05406
+    },
+    {
+      "symbol": "IBM",
+      "qty": 133.599252582,
+      "avg_entry_price": 227.390194,
+      "current_price": 220.5,
+      "market_value": 29458.635194,
+      "unrealized_pl": -920.524769,
+      "unrealized_plpc": -0.0303
+    },
+    {
+      "symbol": "P",
+      "qty": 234.35285042,
+      "avg_entry_price": 129.63,
+      "current_price": 129.23,
+      "market_value": 30285.41886,
+      "unrealized_pl": -93.74114,
+      "unrealized_plpc": -0.00309
+    }
+  ]
+}
