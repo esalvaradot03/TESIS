@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-10-10T01:04:49.171733+00:00",
+  "equity": 98272.15,
+  "last_equity": 97429.19352776837,
+  "cash": -62571.44,
+  "buying_power": 200076.28,
+  "portfolio_value": 98272.15,
+  "day_pl": 862.59,
+  "day_pl_pct": 0.0089,
+  "n_positions": 6,
+  "positions": [
+    {
+      "symbol": "ABBV",
+      "qty": 57.418188498,
+      "avg_entry_price": 272.15,
+      "current_price": 276.47,
+      "market_value": 15874.406574,
+      "unrealized_pl": 248.046574,
+      "unrealized_plpc": 0.01587
+    },
+    {
+      "symbol": "CAT",
+      "qty": 19.281804496,
+      "avg_entry_price": 810.42,
+      "current_price": 800.9762,
+      "market_value": 15444.266494,
+      "unrealized_pl": -182.093506,
+      "unrealized_plpc": -0.01165
+    },
+    {
+      "symbol": "GS",
+      "qty": 53.512482217,
+      "avg_entry_price": 871.64,
+      "current_price": 897.0,
+      "market_value": 48000.696549,
+      "unrealized_pl": 1357.076549,
+      "unrealized_plpc": 0.02909
+    },
+    {
+      "symbol": "KHC",
+      "qty": 713.206754906,
+      "avg_entry_price": 21.91,
+      "current_price": 22.26,
+      "market_value": 15875.982364,
+      "unrealized_pl": 249.622364,
+      "unrealized_plpc": 0.01597
+    },
+    {
+      "symbol": "LULU",
+      "qty": 171.926064473,
+      "avg_entry_price": 90.89,
+      "current_price": 94.44,
+      "market_value": 16236.697529,
+      "unrealized_pl": 610.337529,
+      "unrealized_plpc": 0.03906
+    },
+    {
+      "symbol": "STZ",
+      "qty": 402.899023926,
+      "avg_entry_price": 115.77,
+      "current_price": 122.64,
+      "market_value": 49411.536294,
+      "unrealized_pl": 2767.916294,
+      "unrealized_plpc": 0.05934
+    }
+  ]
+}
