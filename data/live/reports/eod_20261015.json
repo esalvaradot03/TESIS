@@ -1,22 +1,22 @@
 {
-  "timestamp": "2026-10-15T00:01:13.021940+00:00",
-  "equity": 98002.95,
-  "last_equity": 99219.80750385659,
-  "cash": 81986.32,
-  "buying_power": 372791.85,
-  "portfolio_value": 98002.95,
-  "day_pl": -1154.95,
-  "day_pl_pct": -0.0116,
+  "timestamp": "2026-10-15T23:45:49.382381+00:00",
+  "equity": 98952.43,
+  "last_equity": 98159.85340626456,
+  "cash": 81983.33,
+  "buying_power": 375446.81,
+  "portfolio_value": 98952.43,
+  "day_pl": 882.84,
+  "day_pl_pct": 0.009,
   "n_positions": 1,
   "positions": [
     {
       "symbol": "LULU",
       "qty": 171.926064473,
       "avg_entry_price": 90.89,
-      "current_price": 93.16,
-      "market_value": 16016.632166,
-      "unrealized_pl": 390.272166,
-      "unrealized_plpc": 0.02498
+      "current_price": 98.7,
+      "market_value": 16969.102563,
+      "unrealized_pl": 1342.742563,
+      "unrealized_plpc": 0.08593
     }
   ]
 }
