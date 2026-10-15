@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-10-15T00:01:13.021940+00:00",
+  "equity": 98002.95,
+  "last_equity": 99219.80750385659,
+  "cash": 81986.32,
+  "buying_power": 372791.85,
+  "portfolio_value": 98002.95,
+  "day_pl": -1154.95,
+  "day_pl_pct": -0.0116,
+  "n_positions": 1,
+  "positions": [
+    {
+      "symbol": "LULU",
+      "qty": 171.926064473,
+      "avg_entry_price": 90.89,
+      "current_price": 93.16,
+      "market_value": 16016.632166,
+      "unrealized_pl": 390.272166,
+      "unrealized_plpc": 0.02498
+    }
+  ]
+}
